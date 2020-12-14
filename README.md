@@ -3,15 +3,20 @@
 [中文](./README_ZN.md)
 
 ## WAF principle
+
 Open the target elf by creating a child process, and then the parent process uses ptrace to monitor the syscall call call of the child process. If the standard IO is used, the data in the IO is read and recorded in the log. If the syscall is dangerous, it is also recorded in the log
 
 
 
 ## Code Tree
+
 **src**
+
+```
 | -- hex.c    [print file data as hexadecimal string]
 | -- i0gan.c [WAF program source code]
 └ -- Test.c   [test code]
+```
 
 
 
@@ -20,9 +25,11 @@ Open the target elf by creating a child process, and then the parent process use
 ### 0x01
 
 Compile first
+
 ```
 make
 ```
+
 The pwn and hex files are compiled, and the test program is `/tmp/.i0gan/pwn`
 pwn is a waf program, which is used to grab the standard input and output data of`/tmp/.i0gan/pwn `program
 Hex is used to print file data in hexadecimal strings
@@ -44,6 +51,7 @@ Upload the compiled `pwn` file to the `/tmp` directory. The `pwn service paths` 
 cp /pwn/pwn /tmp/.i0gan
 cp /tmp/pwn /pwn/pwn
 ```
+
 If the attacker attacks, the corresponding attack log file will be generated in the directory `/tmp/.i0gan/`. Each attack will generate a file, which can be directly analyzed after being attacked
 
 

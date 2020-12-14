@@ -1,7 +1,6 @@
 # AWD PWN WAF
 
 
-
 ## WAF原理
 
 使用创建子进程打开目标elf, 然后父进程使用ptrace监测子进程的syscall调用,  若是标准io, 那么读取io中的数据, 记录在log里, 若是危险的syscall, 也记录在log里.
@@ -10,10 +9,13 @@
 
 ## Code Tree
 
-**src** 
+
+```
+src
 ├── hex.c    [将文件数据打印为16进制字符串]
 ├── i0gan.c [waf程序源代码]
 └── test.c    [测试代码]
+```
 
 
 
