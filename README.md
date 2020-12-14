@@ -14,7 +14,7 @@ Open the target elf by creating a child process, and then the parent process use
 
 ```
 | -- hex.c    [print file data as hexadecimal string]
-| -- i0gan.c [WAF program source code]
+| -- i0gan.c  [WAF program source code]
 └ -- Test.c   [test code]
 ```
 
@@ -58,7 +58,7 @@ If the attacker attacks, the corresponding attack log file will be generated in 
 
 ## Test
 
-Here is a test. C program as an example
+Here is a test.c program as an example
 
 
 
