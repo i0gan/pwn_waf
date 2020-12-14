@@ -58,8 +58,16 @@ enum sys_type {
 int state = -1;
 int log_fd = -1;
 
+void init();
+int run(int argc, char* argv[]);
+int open_log();
+void close_log();
 void append_hex_to_log_buf(const char *buf, int length);
 void append_to_log_buf(const char *buf, int length);
+void write_log_buf();
+void write_log(const char *buf, int len);
+void interactive_log(pid_t pid, char* addr, int size, enum sys_type type);
+
 
 void append_hex_to_log_buf(const char *buf, int length) {
 	char buf_[16] = {0};

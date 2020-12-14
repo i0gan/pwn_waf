@@ -1,4 +1,7 @@
-TARGET := pwn
+# Author: i0gan
+# For compile i0gan_waf program
+
+TARGET := i0gan_waf
 GCC := gcc
 TEST := /tmp/.i0gan/pwn
 LOG_PATH := /tmp/.i0gan
