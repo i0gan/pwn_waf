@@ -1,17 +1,19 @@
 # AWD PWN WAF
 
-[中文](./README_ZN.md)
 
-## WAF principle
-Open the target elf by creating a child process, and then the parent process uses ptrace to monitor the syscall call call of the child process. If the standard IO is used, the data in the IO is read and recorded in the log. If the syscall is dangerous, it is also recorded in the log
+
+## WAF原理
+
+使用创建子进程打开目标elf, 然后父进程使用ptrace监测子进程的syscall调用,  若是标准io, 那么读取io中的数据, 记录在log里, 若是危险的syscall, 也记录在log里.
 
 
 
 ## Code Tree
-**src**
-| -- hex.c    [print file data as hexadecimal string]
-| -- i0gan.c [WAF program source code]
-└ -- Test.c   [test code]
+
+**src** 
+├── hex.c    [将文件数据打印为16进制字符串]
+├── i0gan.c [waf程序源代码]
+└── test.c    [测试代码]
 
 
 
@@ -19,42 +21,54 @@ Open the target elf by creating a child process, and then the parent process use
 
 ### 0x01
 
-Compile first
+先编译
+
 ```
 make
 ```
-The pwn and hex files are compiled, and the test program is `/tmp/.i0gan/pwn`
-pwn is a waf program, which is used to grab the standard input and output data of`/tmp/.i0gan/pwn `program
-Hex is used to print file data in hexadecimal strings
+
+编译得到 pwn与hex文件还有测试程序，测试程序为/tmp/.i0gan/pwn
+
+pwn是一个waf程序，用于抓取/tmp/.i0gan/pwn程序标准输入输出的数据
+
+hex用于以16进制字符串打印文件数据
 
 
 
 ### 0x02
 
-After compiling successfully, you can run `./pwn` directly to test
-Store the interactive log file in the directory `/tmp/.i0gan/` with the format of time + timestamp. i0gan.
+编译成功之后，可以直接运行./pwn来进行测试
+
+在/tmp/.i0gan/目录下储存交互日志文件，文件名称格式为 时间+时间戳.i0gan。
 
 
 
 ### 0x03
 
-Upload the compiled `pwn` file to the `/tmp` directory. The `pwn service paths` stored in different events may be different. Take `/pwn/pwn` as an example. If you don't know where it is, `cat /etc/xinetd.d/pwn` service can view its own service path. First create a `.i0gan` directory in the `/tmp` directory. If you don't want to create it yourself, run the WAF program `(/tmp/pwn)` directly on the server to create it automatically. Copy the monitored service program to `/tmp/.i0gan` directory, and replace the service program with WAF program
+上传编译好的pwn文件到/tmp目录下
+
+不同的举办可能所存放的pwn服务路径不一样，这里以/pwn/pwn为例，若不知道在哪里，cat /etc/xinetd.d/pwn 服务来查看自己的服务路径。
+
+先在/tmp目录下创建一个.i0gan目录，若不想自己创建，直接在服务器上运行该waf程序即可自动创建。
+
+复制自己所被监控的服务程序到/tmp/.i0gan目录下，且将服务程序替换为waf程序
 
 ```
 cp /pwn/pwn /tmp/.i0gan
 cp /tmp/pwn /pwn/pwn
 ```
-If the attacker attacks, the corresponding attack log file will be generated in the directory `/tmp/.i0gan/`. Each attack will generate a file, which can be directly analyzed after being attacked
+
+若攻击方打入之后，会在tmp/.i0gan/目录下生成相应的攻击日志文件。每次攻击都会生成一个文件，被攻击之后就直接分析日志即可
+
+
 
 
 
 ## Test
 
-Here is a test. C program as an example
+这里一test.c程序为例子
 
-
-
-### Interaction
+### 交互
 
 ```
 ┌[logan☮arch]-(~/share/template/awd/i0gan_waf)
@@ -76,7 +90,7 @@ exit
 
 
 
-### Log
+### 日志
 
 ```
 // AWD Pwn Waf
@@ -128,4 +142,4 @@ Test system:
 "\x54\x65\x73\x74\x20\x73\x79\x73\x74\x65\x6d\x3a\x0a\x0a"
 ```
 
-If there is a string of words "-------------- dangerous syscall------------", basically your server has been hacked!
+出现一串-------------- dangerous syscall------------字样的话,  基本上你的服务器已经被打了...
