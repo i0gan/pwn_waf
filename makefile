@@ -1,5 +1,6 @@
 # Author: i0gan
-# For compile i0gan_waf program
+# Do    : For compile i0gan_waf program
+# Date  : 2020-12-15
 
 TARGET := i0gan_waf
 GCC := gcc
@@ -7,9 +8,9 @@ TEST := /tmp/.i0gan/pwn
 LOG_PATH := /tmp/.i0gan
 HEX := hex
 RM = rm -rf
-MAIN_SRC := src/i0gan.c
+MAIN_SRC := src/i0gan_waf.c
 TEST_SRC := src/test.c
-HEX_SRC := src/hex.c
+HEX_SRC  := src/hex.c
 
 $(TARGET) : $(MAIN_SRC) $(TEST) $(HEX)
 	$(GCC) $(MAIN_SRC) -o $(TARGET)

@@ -4,7 +4,7 @@
 
 ## WAF Principle
 
-Open the target elf by creating a child process, and then the parent process uses ptrace to monitor the syscall  of the child process. If the standard IO is used, the data  is read and recorded in the log. If the syscall is dangerous, it is also recorded in the log
+Execve the target elf file by creating a child process, and then the parent process uses ptrace to monitor the syscall  of the child process. If the standard IO is used, the data  is read and recorded in the log. If the syscall is dangerous, it is also recorded in the log
 
 
 
@@ -12,9 +12,9 @@ Open the target elf by creating a child process, and then the parent process use
 
 ```
 src
-├── hex.c    [print file data as hexadecimal string]
-├── i0gan.c  [WAF program source code]
-└── Test.c   [test source code]
+├── hex.c       [print file data as hexadecimal string]
+├── i0gan_waf.c [WAF program source code]
+└── Test.c      [test source code]
 ```
 
 
@@ -56,6 +56,22 @@ If the attacker attacks, the corresponding attack log file will be generated in 
 
 
 
+## Other use
+
+### Run mode
+
+There are two operating modes, `RUN_I0GAN_` mode and catch mode. After the `RUN_I0GAN_` mode is running, it will `monitor` all `dangerous  syscall` and `capture` the traffic. If it occurs, it will `exit` the program, while the `RUN_CATCH_` mode will only `monitor` and `capture` the traffic, and will `not exit` the program.
+
+In i0gan_waf.c
+
+```
+#define RUN_MODE RUN_I0GAN_          // The mode of RUN_I0GAN_ or RUN_CATCH_
+```
+
+Default as `RUN_I0GAN_`  mode
+
+
+
 ## Test
 
 Here is a test.c program as an example
@@ -88,7 +104,6 @@ exit
 // AWD Pwn Waf
 // Powered By I0gan
 
-""
 -------------------- write -----------------
 Test puts:
 Test write�

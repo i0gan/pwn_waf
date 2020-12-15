@@ -20,9 +20,10 @@
 #define LISTEN_ELF "/tmp/.i0gan/pwn" // trace elf file
 #define LOG_PATH   "/tmp/.i0gan/"    // path to log
 #define ARCH 64                      // 64 or 32
-#define LOG_BUF_LEN 0x10000
+#define LOG_BUF_LEN 0x10000          // log buffer length
+#define RUN_MODE RUN_I0GAN_          // The mode of RUN_I0GAN_ or RUN_CATCH_
 
-const char logo_str[]       = "// AWD Pwn Waf\n// Powered By I0gan\n";
+const char logo_str[]       = "// AWD I0GAN WAF\n// Powered By I0gan\n";
 const char read_str[]       = "-------------------- read ------------------\n";
 const char write_str[]      = "-------------------- write -----------------\n";
 const char dangerous_str[] = "\n-------------- dangerous syscall------------";
@@ -35,8 +36,13 @@ struct log_buf {
 struct log_buf log_buf;
 
 enum sys_type {
-	READ,
-	WRITE
+	SYS_READ_,
+	SYS_WRITE_
+};
+
+enum run_mode {
+	RUN_CATCH_,	
+	RUN_I0GAN_
 };
 
 // error code avoid zombie parent process
@@ -49,7 +55,7 @@ enum sys_type {
 	x == 1
 
 // dangerous syscall
-#define TRACE_SYSCALL(x)  \
+#define TRACE_I0GAN_SYSCALL(x)  \
 	x == __NR_rt_sigaction   || \
 	x == __NR_rt_sigprocmask || \
 	x == __NR_clone  || \
@@ -57,6 +63,7 @@ enum sys_type {
 
 int state = -1;
 int log_fd = -1;
+int run_mode = RUN_MODE;
 
 void init();
 int run(int argc, char* argv[]);
@@ -89,6 +96,7 @@ void append_to_log_buf(const char *buf, int length) {
 }
 
 void write_log_buf() {
+	if(log_buf.size == 0) return;
 	write(log_fd, "\n\"", 2);
 	write(log_fd, log_buf.buf, log_buf.size);
 	write(log_fd, "\"\n", 2);
@@ -99,6 +107,26 @@ void write_log(const char *buf, int len) {
 	write(log_fd, buf, len);
 }
 
+void write_logo() {
+	char time_str[128] = {0};
+	struct timeval tv;
+	time_t time;
+	gettimeofday(&tv, NULL);
+	time = tv.tv_sec;
+	struct tm *p_time = localtime(&time);
+	strftime(time_str, 128, "// Date: %Y-%m-%d %H:%M:%S\n", p_time);
+	#define mode_i0gan_str  "// Mode: RUN_I0GAN_\n"
+	#define mode_catch_str  "// Mode: RUN_CATCH_\n"
+	write_log(time_str, strlen(time_str));
+	if(run_mode == RUN_I0GAN_) {
+		write_log(mode_i0gan_str, strlen(mode_i0gan_str));
+	}else {
+		write_log(mode_catch_str, strlen(mode_catch_str));
+	}
+	write_log(logo_str, sizeof(logo_str) - 1);
+}
+
+// Write interactive log
 void interactive_log(pid_t pid, char* addr, int size, enum sys_type type){
 	int i = 0,j = 0;
 	char data;
@@ -110,7 +138,7 @@ void interactive_log(pid_t pid, char* addr, int size, enum sys_type type){
 	if(state != type) {
 		// when state changed, then write data to log
 		write_log_buf(); // write_last_log_buf
-		if(type == READ) {
+		if(type == SYS_READ_) {
 			write_log(read_str, sizeof(read_str) - 1);
 		}
 		else {
@@ -157,10 +185,14 @@ int run(int argc, char* argv[]){
 			sys_num = regs.orig_eax;
 #endif
 			//printf("syscall %d\n", sys_num);
-			if(TRACE_SYSCALL(sys_num)) {
+			if(TRACE_I0GAN_SYSCALL(sys_num)) {
 				dangerous_syscall_times += 1;
-				if(dangerous_syscall_times > 1)
+				if(dangerous_syscall_times > 1) {
 					write_log(dangerous_str, sizeof(dangerous_str) - 1);
+					if(run_mode == RUN_I0GAN_) {
+						return 0;
+					}
+				}
 			}
 			if (sys_num != SYS_read && sys_num != SYS_write) {
 				ptrace(PTRACE_SYSCALL, pid, NULL, NULL);
@@ -197,10 +229,10 @@ int run(int argc, char* argv[]){
 				size = regs.eax; // readed length
 #endif
 				if(sys_num == SYS_read) {
-					sys_status = READ;
+					sys_status = SYS_READ_;
 				}
 				else if (sys_num == SYS_write) {
-					sys_status = WRITE;
+					sys_status = SYS_WRITE_;
 				}
 				interactive_log(pid, addr, size, sys_status);
 				is_in_syscall = 0;
@@ -249,7 +281,7 @@ int main(int argc, char *argv[]) {
 	int ret = 0;
 	init();
 	open_log();
-	write_log(logo_str, sizeof(logo_str) - 1);
+	write_logo();
 	ret = run(argc, argv);
 	write_log_buf(); // write last data to log buf
 	close_log();
