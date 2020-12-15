@@ -1,24 +1,30 @@
 // Author: i0gan
-// Waf for pwn of awd mode
+// Github: https://github.com/i0gan/i0gan_waf
+// I0gan Waf for PWN of AWD
 
-#include<stdlib.h>
-#include<stdio.h>
-#include<fcntl.h>
-#include<unistd.h>
-#include<error.h>
-#include<sys/wait.h>
-#include<sys/ptrace.h>
-#include<sys/syscall.h>
-#include<sys/user.h>
-#include<sys/types.h>
-#include<sys/stat.h>
-#include<sys/time.h>
-#include<time.h>
-#include<string.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <fcntl.h>
+#include <unistd.h>
+#include <error.h>
+#include <sys/wait.h>
+#include <sys/ptrace.h>
+#include <sys/syscall.h>
+#include <sys/user.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <sys/time.h>
+#include <time.h>
+#include <string.h>
+#include <sys/prctl.h>
 
 // for hide binary file
 #define LISTEN_ELF "/tmp/.i0gan/pwn" // trace elf file
 #define LOG_PATH   "/tmp/.i0gan/"    // path to log
+
+//#define LISTEN_ELF ".i0gan/pwn" // trace elf file
+//#define LOG_PATH   ".i0gan/"    // path to log
+
 #define ARCH 64                      // 64 or 32
 #define LOG_BUF_LEN 0x10000          // log buffer length
 #define RUN_MODE RUN_I0GAN_          // The mode of RUN_I0GAN_ or RUN_CATCH_
@@ -74,7 +80,7 @@ void append_to_log_buf(const char *buf, int length);
 void write_log_buf();
 void write_log(const char *buf, int len);
 void interactive_log(pid_t pid, char* addr, int size, enum sys_type type);
-
+void readn(int fd, char *buf, int length);
 
 void append_hex_to_log_buf(const char *buf, int length) {
 	char buf_[16] = {0};
@@ -97,7 +103,7 @@ void append_to_log_buf(const char *buf, int length) {
 
 void write_log_buf() {
 	if(log_buf.size == 0) return;
-	write(log_fd, "\n\"", 2);
+	write(log_fd, "\nhex=\"", 6);
 	write(log_fd, log_buf.buf, log_buf.size);
 	write(log_fd, "\"\n", 2);
 	log_buf.size = 0;
@@ -161,7 +167,7 @@ int run(int argc, char* argv[]){
 	pid = fork();
 	int sys_num;
 	enum sys_type sys_status;
-	// we use child process to exec 
+	// Use child process to exec 
 	if(pid == 0){
 		ptrace(PTRACE_TRACEME, 0, NULL, NULL);
 		argv[1] = LISTEN_ELF;
@@ -171,7 +177,7 @@ int run(int argc, char* argv[]){
 			return -1;
 		}
 	}
-	// parent to get child syscall
+	// parent to ptrace child syscall
 	else if (pid > 0){
 		while(1) {
 			wait(&status);
@@ -188,9 +194,15 @@ int run(int argc, char* argv[]){
 			if(TRACE_I0GAN_SYSCALL(sys_num)) {
 				dangerous_syscall_times += 1;
 				if(dangerous_syscall_times > 1) {
+					// dangerous syscall
 					write_log(dangerous_str, sizeof(dangerous_str) - 1);
 					if(run_mode == RUN_I0GAN_) {
-						return 0;
+						// Write last data to log buf
+						write_log_buf();
+						close_log();
+						// Avoid input cmd from attacker
+						readn(1, log_buf.buf, LOG_BUF_LEN);
+						exit(0);
 					}
 				}
 			}
@@ -202,8 +214,8 @@ int run(int argc, char* argv[]){
 				is_in_syscall = 1;
 				ptrace(PTRACE_SYSCALL, pid, 0, 0);
 			} else {
-				// we should ignor the first time
-				// checl it is standard pipe or not
+				// Ignore the first time
+				// Check it is standard pipe or not
 				int is_standard_io = 0;
 #if ARCH == 64
 				is_standard_io = STANDARD_IO(regs.rdi);
@@ -247,11 +259,22 @@ int run(int argc, char* argv[]){
 	}
 }
 
+void readn(int fd, char *buf, int length) {
+	int read_sum = 0;
+	while(read_sum < length) {
+		int read_size = read(fd, buf + read_sum, length - read_sum);
+		if(read_size <= 0)
+			break;
+		read_sum += read_size;	
+	}
+}
 void init() {
 	setvbuf(stdin,0,2,0);
 	setvbuf(stdout,0,2,0);
-	// create log dir
+	// Create log dir
 	mkdir(LOG_PATH, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+	// When parent process exit, then child also exit
+	prctl(PR_SET_PDEATHSIG, SIGHUP);
 }
 
 int open_log() {
@@ -283,7 +306,8 @@ int main(int argc, char *argv[]) {
 	open_log();
 	write_logo();
 	ret = run(argc, argv);
-	write_log_buf(); // write last data to log buf
+	// write last data to log buf
+	write_log_buf();
 	close_log();
 	return ret;
 }
