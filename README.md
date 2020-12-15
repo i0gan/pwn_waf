@@ -38,7 +38,7 @@ The`i0gan_waf` and `hex` files are compiled, and the test program is `/tmp/.i0ga
 ### 0x02
 
 After compiling successfully, you can run `./i0gan_waf`  directly to test
-Store the interactive log file in the directory `/tmp/.i0gan/` , The name of file format is  `time + timestamp + .i0gan`
+Store the interactive log file in the directory `/tmp/.i0gan/` , The name of file format is  `time + hex microseconds + .i0gan`
 
 
 
@@ -84,16 +84,20 @@ Here is a test.c program as an example
 Test puts:
 Test write�
 Test read:
-i0gan AAAAABBBB
+AAABBB
 Test gets:
 
-WoW! Cool!
+I0gan'ssss waf
 Test system:
 
-sh-5.0$ exit
+ls
+whoami 
 exit
+dddd
+^C
+sh: initialize_job_control: no job control in background: Bad file descriptor
 ┌[logan☮arch]-(~/disk2/github/i0gan_waf)-[git://main ✗]-
-└> cat /tmp/.i0gan/21_26_37_5fd7680d.i0gan
+└> cat /tmp/.i0gan/18_31_43_a55a4.i0gan
 ```
 
 
@@ -101,52 +105,35 @@ exit
 ### Log
 
 ```
-// AWD Pwn Waf
+// Date: 2020-12-15 18:31:43
+// Mode: RUN_I0GAN_
+// AWD I0GAN WAF
 // Powered By I0gan
-
 -------------------- write -----------------
 Test puts:
 Test write�
 Test read:
 
-"\x54\x65\x73\x74\x20\x70\x75\x74\x73\x3a\x0a\x54\x65\x73\x74\x20\x77\x72\x69\x74\x65\x00\x01\x02\x03\xff\x0a\x54\x65\x73\x74\x20\x72\x65\x61\x64\x3a\x0a"
+hex="\x54\x65\x73\x74\x20\x70\x75\x74\x73\x3a\x0a\x54\x65\x73\x74\x20\x77\x72\x69\x74\x65\x00\x01\x02\x03\xff\x0a\x54\x65\x73\x74\x20\x72\x65\x61\x64\x3a\x0a"
 -------------------- read ------------------
-i0gan AAAAABBBB
+AAABBB
 
-"\x69\x30\x67\x61\x6e\x20\x41\x41\x41\x41\x41\x42\x42\x42\x42\x0a"
+hex="\x41\x41\x41\x42\x42\x42\x0a"
 -------------------- write -----------------
 Test gets:
 
 
-"\x54\x65\x73\x74\x20\x67\x65\x74\x73\x3a\x0a\x0a"
+hex="\x54\x65\x73\x74\x20\x67\x65\x74\x73\x3a\x0a\x0a"
 -------------------- read ------------------
-WoW! Cool!
+I0gan'ssss waf
 
-"\x57\x6f\x57\x21\x20\x43\x6f\x6f\x6c\x21\x0a"
+hex="\x49\x30\x67\x61\x6e\x27\x73\x73\x73\x73\x20\x77\x61\x66\x0a"
 -------------------- write -----------------
 Test system:
 
 
 -------------- dangerous syscall------------
--------------- dangerous syscall------------
--------------- dangerous syscall------------
--------------- dangerous syscall------------
--------------- dangerous syscall------------
--------------- dangerous syscall------------
--------------- dangerous syscall------------
--------------- dangerous syscall------------
--------------- dangerous syscall------------
--------------- dangerous syscall------------
--------------- dangerous syscall------------
--------------- dangerous syscall------------
--------------- dangerous syscall------------
--------------- dangerous syscall------------
--------------- dangerous syscall------------
--------------- dangerous syscall------------
--------------- dangerous syscall------------
--------------- dangerous syscall------------
--------------- dangerous syscall------------
-"\x54\x65\x73\x74\x20\x73\x79\x73\x74\x65\x6d\x3a\x0a\x0a"
+hex="\x54\x65\x73\x74\x20\x73\x79\x73\x74\x65\x6d\x3a\x0a\x0a"
 ```
 
 If there is a string of words "-------------- dangerous syscall------------", basically your server has been hacked!

@@ -286,8 +286,7 @@ int open_log() {
 	time_ = tv.tv_sec;
 	struct tm *p_time = localtime(&time_);
 	strftime(time_str, 128, "%H_%M_%S", p_time);
-	time(&time_);
-	snprintf(file_name, 0x100, "%s%s_%x%s",LOG_PATH, time_str, time_, ".i0gan");
+	snprintf(file_name, 0x100, "%s%s_%lx%s",LOG_PATH, time_str, tv.tv_usec, ".i0gan");
 	log_fd = open(file_name, O_CREAT|O_APPEND|O_WRONLY, 0666);
 	if(log_fd == -1) {
 		perror("open:");
