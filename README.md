@@ -68,7 +68,7 @@ In i0gan_waf.c
 #define RUN_MODE RUN_I0GAN_          // The mode of RUN_I0GAN_ or RUN_CATCH_
 ```
 
-Default as `RUN_I0GAN_`  mode
+Default as `RUN_CATCH_`  mode
 
 
 

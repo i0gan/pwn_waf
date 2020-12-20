@@ -19,15 +19,11 @@
 #include <sys/prctl.h>
 
 // for hide binary file
+#define ARCH 64                      // 64 or 32
 #define LISTEN_ELF "/tmp/.i0gan/pwn" // trace elf file
 #define LOG_PATH   "/tmp/.i0gan/"    // path to log
-
-//#define LISTEN_ELF ".i0gan/pwn" // trace elf file
-//#define LOG_PATH   ".i0gan/"    // path to log
-
-#define ARCH 64                      // 64 or 32
 #define LOG_BUF_LEN 0x10000          // log buffer length
-#define RUN_MODE RUN_I0GAN_          // The mode of RUN_I0GAN_ or RUN_CATCH_
+#define RUN_MODE RUN_CATCH_          // The mode of RUN_I0GAN_ or RUN_CATCH_
 
 const char logo_str[]       = "// AWD I0GAN WAF\n// Powered By I0gan\n";
 const char read_str[]       = "-------------------- read ------------------\n";
@@ -38,8 +34,6 @@ struct log_buf {
 	char buf[LOG_BUF_LEN];
 	int  size;
 };
-
-struct log_buf log_buf;
 
 enum sys_type {
 	SYS_READ_,
@@ -67,6 +61,7 @@ enum run_mode {
 	x == __NR_clone  || \
 	x == __NR_execve
 
+struct log_buf log_buf;
 int state = -1;
 int log_fd = -1;
 int run_mode = RUN_MODE;
@@ -272,7 +267,8 @@ void init() {
 	setvbuf(stdin,0,2,0);
 	setvbuf(stdout,0,2,0);
 	// Create log dir
-	mkdir(LOG_PATH, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+	//mkdir(LOG_PATH, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+	mkdir(LOG_PATH, 0777);
 	// When parent process exit, then child also exit
 	prctl(PR_SET_PDEATHSIG, SIGHUP);
 }
