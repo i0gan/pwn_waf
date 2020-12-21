@@ -1,25 +1,36 @@
 # Author: i0gan
-# Do    : For compile i0gan_waf program
+# Do    : For compile awd waf program
 # Date  : 2020-12-15
 
-TARGET := i0gan_waf
-GCC := gcc
-TEST := /tmp/.i0gan/pwn
+GCC  := gcc
+CFLAGS := 
 LOG_PATH := /tmp/.i0gan
+ARCH := 64
+
 HEX := hex
 RM = rm -rf
-MAIN_SRC := src/i0gan_waf.c
-TEST_SRC := src/test.c
-HEX_SRC  := src/hex.c
 
-$(TARGET) : $(MAIN_SRC) $(TEST) $(HEX)
-	$(GCC) $(MAIN_SRC) -o $(TARGET)
+TEST_PWN_SRC := src/test_pwn.c
+HEX_SRC    := src/hex.c
+LOGGER_SRC := src/logger.c
+WAF_SRC    := src/waf.c
 
-$(TEST) : $(TEST_SRC)
+all : catch i0gan redir test_pwn
+
+test_pwn :
 	@mkdir $(LOG_PATH)
-	$(GCC) $< -o $@
-	
-$(HEX) : $(HEX_SRC)
-	$(GCC) $< -o $@
-clean:
-	$(RM) $(TARGET) $(TEST) $(HEX) $(LOG_PATH)
+	$(GCC) $(TEST_PWN_SRC) -o $@
+	@cp $@ $(LOG_PATH)/pwn
+	@echo -e "127.0.0.1:10100\n" > $(LOG_PATH)/hosts
+
+clean :
+	$(RM) catch i0gan redir test_pwn $(LOG_PATH)
+
+catch :
+	$(GCC) $(CFLAGS) $(WAF_SRC) $(LOGGER_SRC) -DRUN_MODE=RUN_CATCH -DLOG_PATH=\"$(LOG_PATH)\" -DARCH=$(ARCH) -o $@
+
+i0gan :
+	$(GCC) $(CFLAGS) $(WAF_SRC) $(LOGGER_SRC) -DRUN_MODE=RUN_I0GAN -DLOG_PATH=\"$(LOG_PATH)\" -DARCH=$(ARCH) -o $@
+
+redir : 
+	$(GCC) $(CFLAGS) $(WAF_SRC) $(LOGGER_SRC) -DRUN_MODE=RUN_REDIR -DLOG_PATH=\"$(LOG_PATH)\" -DARCH=$(ARCH) -o $@
