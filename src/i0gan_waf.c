@@ -21,7 +21,7 @@
 // for hide binary file
 #define ARCH 64                      // 64 or 32
 #define LISTEN_ELF "/tmp/.i0gan/pwn" // trace elf file
-#define LOG_PATH   "/tmp/.i0gan/"    // path to log
+#define LOG_PATH   "/tmp/.i0gan"    // path to log
 #define LOG_BUF_LEN 0x10000          // log buffer length
 #define RUN_MODE RUN_CATCH_          // The mode of RUN_I0GAN_ or RUN_CATCH_
 
@@ -33,6 +33,7 @@ const char dangerous_str[] = "\n-------------- dangerous syscall------------";
 struct log_buf {
 	char buf[LOG_BUF_LEN];
 	int  size;
+	int  cap;
 };
 
 enum sys_type {
@@ -44,6 +45,8 @@ enum run_mode {
 	RUN_CATCH_,	
 	RUN_I0GAN_
 };
+
+struct log_buf *logger = NULL;
 
 // error code avoid zombie parent process
 #define ERROR_EXIT(x)  \
@@ -61,10 +64,11 @@ enum run_mode {
 	x == __NR_clone  || \
 	x == __NR_execve
 
-struct log_buf log_buf;
 int state = -1;
 int log_fd = -1;
 int run_mode = RUN_MODE;
+int write_times = 0;
+int read_times = 0;
 
 void init();
 int run(int argc, char* argv[]);
@@ -88,20 +92,39 @@ void append_hex_to_log_buf(const char *buf, int length) {
 }
 
 void append_to_log_buf(const char *buf, int length) {
-	if(length > (LOG_BUF_LEN - log_buf.size)) {
-		puts("no memory to store data");
-		return ;
+	if(logger == NULL) {
+		logger = malloc(0x1000);
+		logger->cap = 0x1000;
 	}
-	memcpy(log_buf.buf + log_buf.size, buf, length);
-	log_buf.size += length;
+
+	if(length >= (logger->cap - logger->size)) {
+		int append_size = (length - (logger->cap - logger->size)) / 0x1000 + 0x1000;
+		logger = realloc(logger, logger->cap + append_size);
+		logger->cap += append_size;
+	}
+
+	memcpy(logger->buf + logger->size, buf, length);
+	logger->size += length;
 }
 
 void write_log_buf() {
-	if(log_buf.size == 0) return;
-	write(log_fd, "\nhex=\"", 6);
-	write(log_fd, log_buf.buf, log_buf.size);
+	if(logger == NULL) return;
+	if(logger->size == 0) return;
+	char str[0x60] = {0};
+
+	if(state == SYS_WRITE_) {
+		snprintf(str, 0x60, "\nw_%d = \"", write_times);
+		write(log_fd, str, strlen(str));
+		write_times ++;
+	}else {
+		snprintf(str, 0x60, "\nr_%d = \"", read_times);
+		write(log_fd, str, strlen(str));
+		read_times ++;
+	}
+
+	write(log_fd, logger->buf, logger->size);
 	write(log_fd, "\"\n", 2);
-	log_buf.size = 0;
+	logger->size = 0;
 }
 
 void write_log(const char *buf, int len) {
@@ -196,7 +219,7 @@ int run(int argc, char* argv[]){
 						write_log_buf();
 						close_log();
 						// Avoid input cmd from attacker
-						readn(1, log_buf.buf, LOG_BUF_LEN);
+						readn(1, logger->buf, 0x1000);
 						exit(0);
 					}
 				}
@@ -263,6 +286,7 @@ void readn(int fd, char *buf, int length) {
 		read_sum += read_size;	
 	}
 }
+
 void init() {
 	setvbuf(stdin,0,2,0);
 	setvbuf(stdout,0,2,0);
@@ -282,7 +306,7 @@ int open_log() {
 	time_ = tv.tv_sec;
 	struct tm *p_time = localtime(&time_);
 	strftime(time_str, 128, "%H_%M_%S", p_time);
-	snprintf(file_name, 0x100, "%s%s_%lx%s",LOG_PATH, time_str, tv.tv_usec, ".i0gan");
+	snprintf(file_name, 0x100, "%s/%s_%lx%s",LOG_PATH, time_str, tv.tv_usec, ".i0gan");
 	log_fd = open(file_name, O_CREAT|O_APPEND|O_WRONLY, 0666);
 	if(log_fd == -1) {
 		perror("open:");
