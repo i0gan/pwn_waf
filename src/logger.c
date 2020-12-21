@@ -1,3 +1,7 @@
+// Author: i0gan
+// Github: https://github.com/i0gan/pwn_waf
+// Pwn Waf for AWD CTF
+
 #include "logger.h"
 
 struct log_buf logger = {NULL, 0, 0};

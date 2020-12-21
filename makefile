@@ -1,5 +1,5 @@
 # Author: i0gan
-# Do    : For compile awd waf program
+# Do    : For compile pwn waf program
 # Date  : 2020-12-15
 
 GCC    := gcc

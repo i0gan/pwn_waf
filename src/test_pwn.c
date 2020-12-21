@@ -1,3 +1,7 @@
+// Author: i0gan
+// Github: https://github.com/i0gan/pwn_waf
+// Pwn Waf for AWD CTF
+
 #include<stdio.h>
 #include<unistd.h>
 #include<stdlib.h>

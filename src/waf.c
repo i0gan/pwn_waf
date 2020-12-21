@@ -1,6 +1,6 @@
 // Author: i0gan
-// Github: https://github.com/i0gan/i0gan_waf
-// I0gan Waf for PWN of AWD
+// Github: https://github.com/i0gan/pwn_waf
+// Pwn Waf for AWD CTF
 
 #include "waf.h"
 const char logo_str[]      = "// CTF AWD I0GAN WAF\n// Powered By I0gan\n";
