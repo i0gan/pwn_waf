@@ -1,15 +1,14 @@
 #include "logger.h"
 
 struct log_buf logger = {NULL, 0, 0};
-char logger_path[0x100];
-int logger_fd;
+char logger_path[0x100] = {0};
+int  logger_fd = -1;
 
 void logger_init(const char *path) {
     // Create log dir
     //mkdir(LOG_PATH, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
 	if (access(path, R_OK | W_OK) != 0) {
 		mkdir(path, 0777);
-        //printf("/etc/passwd can be read\n");
 	}
     strncpy(logger_path, path, 0x100);
 }

@@ -3,10 +3,10 @@
 // I0gan Waf for PWN of AWD
 
 #include "waf.h"
-const char logo_str[]      = "// AWD I0GAN WAF\n// Powered By I0gan\n\n";
-const char read_str[]      = "-------------------- read ------------------\n";
-const char write_str[]     = "-------------------- write -----------------\n";
-const char dangerous_str[] = "\n-------------- dangerous syscall------------";
+const char logo_str[]      = "// CTF AWD I0GAN WAF\n// Powered By I0gan\n";
+const char read_str[]      = "\n<-------------------- read ------------------>\n";
+const char write_str[]     = "\n<-------------------- write ----------------->\n";
+const char dangerous_str[] = "\n<-------------- dangerous syscall------------>";
 enum log_state waf_log_state = LOG_NONE_;
 
 int  waf_run_mode = RUN_MODE;
@@ -61,8 +61,8 @@ void waf_write_logo() {
         logger_write(MODE_CATCH_STR, strlen(MODE_CATCH_STR));
     }else if(waf_run_mode == RUN_I0GAN){
         logger_write(MODE_I0GAN_STR, strlen(MODE_I0GAN_STR));
-    }else if(waf_run_mode == RUN_REDIR) {
-        logger_write(MODE_REDIR_STR, strlen(MODE_REDIR_STR));
+    }else if(waf_run_mode == RUN_FORWARD) {
+        logger_write(MODE_FORWARD_STR, strlen(MODE_FORWARD_STR));
     }else {}
     logger_write(logo_str, sizeof(logo_str) - 1);
 }
@@ -224,7 +224,7 @@ void bin_waf_run(int argc, char* argv[]) {
     }
 }
 
-int connect_server() {
+int connect_server() {    
     struct sockaddr_in server_addr;
     int server_fd = -1;
     server_fd = socket(AF_INET, SOCK_STREAM, 0);
@@ -261,7 +261,7 @@ void redir_waf_run() {
         int result = select(FD_SETSIZE, &test_fds, (fd_set *)0, (fd_set *)0, (struct timeval *) 0);
         if(result < 1) {
             perror("select");
-            exit(1);
+            exit(errno);
         }
         for(int fd = 0; fd < FD_SETSIZE; fd ++) {
             if(FD_ISSET(fd,&test_fds)) {
@@ -308,8 +308,8 @@ void redir_waf_run() {
 }
 
 void waf_init() {
-    setvbuf(stdin,0,2,0);
-    setvbuf(stdout,0,2,0);
+    setbuf(stdin, NULL);
+    setbuf(stdout, NULL);
 	logger_init(LOG_PATH);
     waf_log_open();
     waf_write_logo();
@@ -320,7 +320,7 @@ void waf_init() {
 
 int main(int argc, char *argv[]) {
     waf_init();
-#if RUN_MODE == RUN_REDIR
+#if RUN_MODE == RUN_FORWARD
     redir_waf_run();
 #elif RUN_MODE == RUN_I0GAN
     bin_waf_run(argc, argv);

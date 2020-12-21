@@ -1,10 +1,24 @@
 # AWD PWN WAF
 
+## Intro
+
+CTF AWD  WAF FOR PWN
+
+Author: I0gan
+
+QQ: 418894113
 
 
-## WAF Principle
+
+## RUN_CATCH / RUN_I0GAN MODE WAF Principle
 
 Execve the target elf file by creating a child process, and then the parent process uses ptrace to monitor the syscall  of the child process. If the standard IO is used, the data  is read and recorded in the log. If the syscall is dangerous, it is also recorded in the log
+
+
+
+## RUN_FORWARD MODE WAF Principle
+
+Capture traffic from standard I / O and forward it to the target service.
 
 
 
@@ -12,92 +26,111 @@ Execve the target elf file by creating a child process, and then the parent proc
 
 ```
 src
-├── hex.c       [print file data as hexadecimal string]
-├── i0gan_waf.c [WAF program source code]
-└── Test.c      [test source code]
+├── logger.c
+├── logger.h
+├── test_pwn.c
+├── waf.c
+└── waf.h
 ```
 
 
 
 ##  How to use
 
-### 0x01
+### 0x01 config
 
-Compile first
+In makefile
+
+```makefile
+# configure
+LOG_PATH    := /tmp/.i0gan # Set your own log path
+ARCH        := 64
+SERVER_IP   := 127.0.0.1 # RUN_FORWARD used
+SERVER_PORT := 9090      # RUN_FORWARD used
+```
+
+You can set your own base configure information.
+
+
+
+### 0x02 Compile
+
+#### Compile all
 
 ```
-make
+make # or make all
 ```
 
-The`i0gan_waf` and `hex` files are compiled, and the test program is `/tmp/.i0gan/pwn`
-`i0gan_waf` is a waf program, which is used to grab the standard input and output data of`/tmp/.i0gan/pwn `program
-`hex`  program is used to print file data in hexadecimal strings
+You will get `catch`,`i0gan`,`redir` files
 
+The `catch` is RUN_CATCH MODE waf program
 
+The `i0gan` is RUN_I0GAN MODE waf program
 
-### 0x02
+The `forward` is RUN_FORWARD MODE waf program
 
-After compiling successfully, you can run `./i0gan_waf`  directly to test
-Store the interactive log file in the directory `/tmp/.i0gan/` , The name of file format is  `time + hex microseconds + .i0gan`
+#### Compile RUN_CATCH mode
+
+```
+make catch
+```
+
+#### Compile RUN_I0GAN mode
+
+```
+make i0gan
+```
+
+Compile RUN_FORWARD mode
+
+```
+make forward
+```
 
 
 
 ### 0x03
 
-Upload the compiled `i0gan_waf`  file to the `/tmp` directory. The `pwn service paths` stored in different events may be different. Take `/pwn/pwn` as an example. If you don't know where it is, `cat /etc/xinetd.d/pwn` service can view its own service path. First create a `.i0gan` directory in the `/tmp` directory. If you don't want to create it yourself, run the WAF program `(/tmp/i0gan_waf)`  directly on the server to create it automatically. Copy the monitored service program to `/tmp/.i0gan` directory, and replace the service program with WAF program
+After compiling all successfully, you can run `./catch`  or ` ./i0gan`  directly to test
+Store the interactive log file in the directory `/tmp/.i0gan/` , The name of file format is  `time + hex microseconds + .i0gan`
+
+
+
+### 0x04
+
+Upload the compiled `catch/i0gan/forward`  program file to the `/tmp` directory. The `pwn service paths` stored in different events may be different. Take `/pwn/pwn` as an example. If you don't know where it is, `cat /etc/xinetd.d/pwn` service can view its own service path.  Copy the monitored service program to `LOG_PATH` directory, and replace the service program with WAF program
 
 ```
 mkdir /tmp/.i0gan          # Create a directory .i0gan in /tmp
+chmod 777 /tmp/.i0gan      # Modify permissions
 cp /pwn/pwn /tmp/.i0gan    # Copy service binary program to /tmp/.i0gan dirctory
-cp /tmp/i0gan_waf /pwn/pwn # Replace your service binary program
+cp /tmp/catch /pwn/pwn # Replace your service binary program
 ```
 
 If the attacker attacks, the corresponding attack log file will be generated in the directory `/tmp/.i0gan/`. Each attack will generate a file, which can be directly analyzed after being attacked
 
 
 
-## Other use
-
-### Run mode
-
-There are two operating modes, `RUN_I0GAN_` mode and catch mode. After the `RUN_I0GAN_` mode is running, it will `monitor` all `dangerous  syscall` and `capture` the traffic. If it occurs, it will `exit` the program, while the `RUN_CATCH_` mode will only `monitor` and `capture` the traffic, and will `not exit` the program.
-
-In i0gan_waf.c
-
-```
-#define RUN_MODE RUN_I0GAN_          // The mode of RUN_I0GAN_ or RUN_CATCH_
-```
-
-Default as `RUN_CATCH_`  mode
-
-
-
-## Test
-
-Here is a test.c program as an example
+## RUN_CATCH MODE Test
 
 ### Interaction
 
 ```
 ┌[logan☮arch]-(~/disk2/github/i0gan_waf)-[git://main ✗]-
-└> ./i0gan_waf 
+└> ./catch 
 Test puts:
 Test write�
 Test read:
-AAABBB
+AAAABBBB
 Test gets:
 
-I0gan'ssss waf
+CCCCDDDD
 Test system:
 
-ls
-whoami 
+sh-5.0$ ls
+catch  forward  i0gan  makefile  README.md  src  test_pwn  waf.pro  waf.pro.user
+sh-5.0$ exit
 exit
-dddd
-^C
-sh: initialize_job_control: no job control in background: Bad file descriptor
-┌[logan☮arch]-(~/disk2/github/i0gan_waf)-[git://main ✗]-
-└> cat /tmp/.i0gan/18_31_43_a55a4.i0gan
 ```
 
 
@@ -105,35 +138,163 @@ sh: initialize_job_control: no job control in background: Bad file descriptor
 ### Log
 
 ```
-// Date: 2020-12-15 18:31:43
-// Mode: RUN_I0GAN_
-// AWD I0GAN WAF
+// Date: 2020-12-22 00:24:08
+// Mode: RUN_CATCH
+// CTF AWD I0GAN WAF
 // Powered By I0gan
--------------------- write -----------------
+
+<-------------------- write ----------------->
 Test puts:
 Test write�
 Test read:
 
-hex="\x54\x65\x73\x74\x20\x70\x75\x74\x73\x3a\x0a\x54\x65\x73\x74\x20\x77\x72\x69\x74\x65\x00\x01\x02\x03\xff\x0a\x54\x65\x73\x74\x20\x72\x65\x61\x64\x3a\x0a"
--------------------- read ------------------
-AAABBB
+w_0 = "\x54\x65\x73\x74\x20\x70\x75\x74\x73\x3a\x0a\x54\x65\x73\x74\x20\x77\x72\x69\x74\x65\x00\x01\x02\x03\xff\x0a\x54\x65\x73\x74\x20\x72\x65\x61\x64\x3a\x0a"
 
-hex="\x41\x41\x41\x42\x42\x42\x0a"
--------------------- write -----------------
+<-------------------- read ------------------>
+AAAABBBB
+
+r_0 = "\x41\x41\x41\x41\x42\x42\x42\x42\x0a"
+
+<-------------------- write ----------------->
 Test gets:
 
 
-hex="\x54\x65\x73\x74\x20\x67\x65\x74\x73\x3a\x0a\x0a"
--------------------- read ------------------
-I0gan'ssss waf
+w_1 = "\x54\x65\x73\x74\x20\x67\x65\x74\x73\x3a\x0a\x0a"
 
-hex="\x49\x30\x67\x61\x6e\x27\x73\x73\x73\x73\x20\x77\x61\x66\x0a"
--------------------- write -----------------
+<-------------------- read ------------------>
+CCCCDDDD
+
+r_1 = "\x43\x43\x43\x43\x44\x44\x44\x44\x0a"
+
+<-------------------- write ----------------->
 Test system:
 
 
--------------- dangerous syscall------------
-hex="\x54\x65\x73\x74\x20\x73\x79\x73\x74\x65\x6d\x3a\x0a\x0a"
+<-------------- dangerous syscall------------>
+<-------------- dangerous syscall------------>
+<-------------- dangerous syscall------------>
+<-------------- dangerous syscall------------>
+<-------------- dangerous syscall------------>
+<-------------- dangerous syscall------------>
+<-------------- dangerous syscall------------>
+<-------------- dangerous syscall------------>
+<-------------- dangerous syscall------------>
+<-------------- dangerous syscall------------>
+<-------------- dangerous syscall------------>
+<-------------- dangerous syscall------------>
+<-------------- dangerous syscall------------>
+<-------------- dangerous syscall------------>
+<-------------- dangerous syscall------------>
+<-------------- dangerous syscall------------>
+<-------------- dangerous syscall------------>
+<-------------- dangerous syscall------------>
+<-------------- dangerous syscall------------>
+w_2 = "\x54\x65\x73\x74\x20\x73\x79\x73\x74\x65\x6d\x3a\x0a\x0a"
 ```
 
 If there is a string of words "-------------- dangerous syscall------------", basically your server has been hacked!
+
+
+
+
+
+## RUN_I0GAN MODE Test
+
+### Interaction
+
+```
+┌[logan☮arch]-(~/disk2/github/i0gan_waf)-[git://main ✗]-
+└> ./i0gan 
+Test puts:
+Test write�
+Test read:
+aaajaksdjf   
+Test gets:
+
+asjdfjadsfasd
+Test system:
+
+ls
+jasjjd
+^C
+sh: initialize_job_control: no job control in background: Bad file descriptor 
+```
+
+### Log
+
+```
+// Date: 2020-12-22 00:25:55
+// Mode: RUN_I0GAN
+// CTF AWD I0GAN WAF
+// Powered By I0gan
+
+<-------------------- write ----------------->
+Test puts:
+Test write�
+Test read:
+
+w_0 = "\x54\x65\x73\x74\x20\x70\x75\x74\x73\x3a\x0a\x54\x65\x73\x74\x20\x77\x72\x69\x74\x65\x00\x01\x02\x03\xff\x0a\x54\x65\x73\x74\x20\x72\x65\x61\x64\x3a\x0a"
+
+<-------------------- read ------------------>
+aaajaksdjf
+
+r_0 = "\x61\x61\x61\x6a\x61\x6b\x73\x64\x6a\x66\x0a"
+
+<-------------------- write ----------------->
+Test gets:
+
+
+w_1 = "\x54\x65\x73\x74\x20\x67\x65\x74\x73\x3a\x0a\x0a"
+
+<-------------------- read ------------------>
+asjdfjadsfasd
+
+r_1 = "\x61\x73\x6a\x64\x66\x6a\x61\x64\x73\x66\x61\x73\x64\x0a"
+
+<-------------------- write ----------------->
+Test system:
+
+
+<-------------- dangerous syscall------------>
+w_2 = "\x54\x65\x73\x74\x20\x73\x79\x73\x74\x65\x6d\x3a\x0a\x0a"
+```
+
+
+
+### RUN_FORWARD MODE Test
+
+### Interaction
+
+```
+┌[logan☮arch]-(~/disk2/github/i0gan_waf)-[git://main ✗]-
+└> ./forward 
+asdfjadsf
+HTTP/1.1 400 Bad Request
+Content-Type: text/plain; charset=utf-8
+Connection: close
+
+400 Bad Request
+```
+
+### Log
+
+```
+// Date: 2020-12-22 00:27:18
+// Mode: RUN_FORWARD
+// CTF AWD I0GAN WAF
+// Powered By I0gan
+
+<-------------------- read ------------------>
+asdfjadsf
+
+r_0 = "\x61\x73\x64\x66\x6a\x61\x64\x73\x66\x0a"
+
+<-------------------- write ----------------->
+HTTP/1.1 400 Bad Request
+Content-Type: text/plain; charset=utf-8
+Connection: close
+
+400 Bad Request
+w_0 = "\x48\x54\x54\x50\x2f\x31\x2e\x31\x20\x34\x30\x30\x20\x42\x61\x64\x20\x52\x65\x71\x75\x65\x73\x74\x0d\x0a\x43\x6f\x6e\x74\x65\x6e\x74\x2d\x54\x79\x70\x65\x3a\x20\x74\x65\x78\x74\x2f\x70\x6c\x61\x69\x6e\x3b\x20\x63\x68\x61\x72\x73\x65\x74\x3d\x75\x74\x66\x2d\x38\x0d\x0a\x43\x6f\x6e\x6e\x65\x63\x74\x69\x6f\x6e\x3a\x20\x63\x6c\x6f\x73\x65\x0d\x0a\x0d\x0a\x34\x30\x30\x20\x42\x61\x64\x20\x52\x65\x71\x75\x65\x73\x74"
+```
+

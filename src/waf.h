@@ -1,5 +1,8 @@
-# pragma once
+// Author: i0gan
+// Github: https://github.com/i0gan/i0gan_waf
+// I0gan Waf for PWN of AWD
 
+# pragma once
 #include <stdlib.h>
 #include <stdio.h>
 #include <fcntl.h>
@@ -7,10 +10,6 @@
 #include <error.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-// Author: i0gan
-// Github: https://github.com/i0gan/i0gan_waf
-// I0gan Waf for PWN of AWD
-
 #include <sys/time.h>
 #include <time.h>
 #include <string.h>
@@ -25,22 +24,28 @@
 #include <sys/user.h>
 #include "logger.h"
 
-#define RUN_CATCH 0x01
-#define RUN_I0GAN 0x02
-#define RUN_REDIR 0x03
+#define RUN_CATCH   0x01
+#define RUN_I0GAN   0x02
+#define RUN_FORWARD 0x03
 
 //#define ARCH 64                        // 64 or 32
-//#define LOG_PATH   "/tmp/.i0gan"     // path to log
-//#define RUN_MODE RUN_I0GAN          // The mode of RUN_I0GAN_ / RUN_CATCH_ / RUN_REDIR_
-#define LISTEN_ELF   LOG_PATH "/pwn"   // trace elf file
-#define TARGET_HOSTS LOG_PATH "/hosts"
-#define MODE_CATCH_STR  "// Mode: RUN_CATCH\n"
-#define MODE_I0GAN_STR  "// Mode: RUN_I0GAN\n"
-#define MODE_REDIR_STR  "// Mode: RUN_REDIR\n"
-#define SERVER_IP  "127.0.0.1"
-#define SERVER_PORT 10100
+//#define LOG_PATH   "/tmp/.i0gan"       // path to log
+//#define RUN_MODE RUN_CATCH             // The mode of RUN_CATCH / RUN_I0GAN / RUN_FORWARD
+#define LISTEN_ELF   LOG_PATH "/pwn"     // trace elf file
+#define MODE_CATCH_STR    "// Mode: RUN_CATCH\n"
+#define MODE_I0GAN_STR    "// Mode: RUN_I0GAN\n"
+#define MODE_FORWARD_STR  "// Mode: RUN_FORWARD\n"
 #define SEND_BUF_SIZE 0x1000
 #define RECV_BUF_SIZE 0x1000
+
+#ifndef SERVER_IP
+#define SERVER_IP "0.0.0.0"
+#endif
+
+#ifndef SERVER_PORT
+#define SERVER_PORT 80
+#endif
+
 
 enum log_state {
     LOG_NONE_,
@@ -63,7 +68,6 @@ enum log_state {
     x == __NR_rt_sigprocmask || \
     x == __NR_clone  || \
     x == __NR_execve
-
 
 int readn(int fd, char *buf, int length);
 int writen(int fd, void *buffer, size_t length);

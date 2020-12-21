@@ -1,6 +1,7 @@
 // Author: i0gan
 // Github: https://github.com/i0gan/i0gan_waf
 // I0gan Waf for PWN of AWD
+
 # pragma once
 #include <stdio.h>
 #include <stdlib.h>
@@ -8,11 +9,10 @@
 #include <unistd.h>
 #include <string.h>
 #include <sys/stat.h>
-
 struct log_buf {
     char *buf;
-    int  size;
-    int  cap;
+    int size;
+    int cap;
 };
 
 extern struct log_buf logger;
