@@ -250,11 +250,17 @@ void redir_waf_run() {
     fd_set read_fds, test_fds;
     int client_read_fd = 0;
     int client_write_fd = 1;
+    int client_error_fd = 2;
+
     int server_fd = connect_server();
     FD_ZERO(&read_fds);
     FD_ZERO(&test_fds);
     FD_SET(server_fd, &read_fds);
+
     FD_SET(client_read_fd, &read_fds); // standard input fd
+    FD_SET(client_write_fd, &read_fds); // standard write fd
+    FD_SET(client_error_fd, &read_fds); // standard error fd
+
     while(1) {
         enum log_state log_state_ = LOG_NONE_;
         test_fds = read_fds;
@@ -273,7 +279,14 @@ void redir_waf_run() {
                 }else if(fd == client_read_fd) {
                     read_size = read(client_read_fd, send_buf, SEND_BUF_SIZE);
                     writen(server_fd, send_buf, read_size);
-                }
+                }else if(fd == client_write_fd) {
+                    read_size = read(client_write_fd, send_buf, SEND_BUF_SIZE);
+                    writen(server_fd, send_buf, read_size);
+                }else if(fd == client_error_fd) {
+                    read_size = read(client_error_fd, send_buf, SEND_BUF_SIZE);
+                    writen(server_fd, send_buf, read_size);
+				}
+
                 // handle disconnect
                 if(read_size == 0 || write_size == 0) {
                     close(fd);
