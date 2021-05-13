@@ -8,6 +8,8 @@ Author: I0gan
 
 QQ: 418894113
 
+## Fix Log
+    2021-05-13: Thancks b0ldfrev commit the IO blocking problem for FORWARD mode 
 
 
 ## RUN_CATCH / RUN_I0GAN MODE WAF Principle
