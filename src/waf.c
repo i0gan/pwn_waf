@@ -3,6 +3,7 @@
 // Pwn Waf for AWD CTF
 
 #include "waf.h"
+#include <fcntl.h>
 const char logo_str[]      = "// CTF AWD I0GAN WAF\n// Powered By I0gan\n";
 const char read_str[]      = "\n<-------------------- read ------------------>\n";
 const char write_str[]     = "\n<-------------------- write ----------------->\n";
@@ -14,6 +15,12 @@ int  waf_write_times = 0;
 int  waf_read_times  = 0;
 char send_buf[SEND_BUF_SIZE];
 char recv_buf[SEND_BUF_SIZE];
+
+void set_fd_nonblock(int fd) {
+    int flags = fcntl(fd, F_GETFL, 0);
+    flags |= O_NONBLOCK;
+    fcntl(fd, F_SETFL,flags);
+}
 
 int readn(int fd, char *buf, int length) {
     int read_sum = 0;
@@ -253,13 +260,19 @@ void redir_waf_run() {
     int client_error_fd = 2;
 
     int server_fd = connect_server();
+
     FD_ZERO(&read_fds);
     FD_ZERO(&test_fds);
-    FD_SET(server_fd, &read_fds);
 
-    FD_SET(client_read_fd, &read_fds); // standard input fd
+    FD_SET(server_fd, &read_fds);
+    FD_SET(client_read_fd, &read_fds);  // standard input fd
     FD_SET(client_write_fd, &read_fds); // standard write fd
     FD_SET(client_error_fd, &read_fds); // standard error fd
+
+    set_fd_nonblock(server_fd);
+    set_fd_nonblock(client_read_fd);
+    set_fd_nonblock(client_write_fd);
+    set_fd_nonblock(client_error_fd);
 
     while(1) {
         enum log_state log_state_ = LOG_NONE_;

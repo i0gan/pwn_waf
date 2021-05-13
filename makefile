@@ -10,7 +10,7 @@ RM     := rm -rf
 LOG_PATH    := /tmp/.i0gan
 ARCH        := 64
 SERVER_IP   := 127.0.0.1
-SERVER_PORT := 9090
+SERVER_PORT := 8080
 
 # src
 TEST_PWN_SRC := src/test_pwn.c
