@@ -60,13 +60,12 @@ enum log_state {
 // judge is standard io
 #define STANDARD_IO(x) \
     x == 0 ||          \
-    x == 1
+    x == 1 || \
+    x == 2
 
 // dangerous syscall
 #define TRACE_I0GAN_SYSCALL(x)  \
-    x == __NR_rt_sigaction   || \
-    x == __NR_rt_sigprocmask || \
-    x == __NR_clone  || \
+    x == __NR_open  || \
     x == __NR_execve
 
 int readn(int fd, char *buf, int length);

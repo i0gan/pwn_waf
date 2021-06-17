@@ -4,7 +4,7 @@
 
 #include "waf.h"
 #include <fcntl.h>
-const char logo_str[]      = "// CTF AWD I0GAN WAF\n// Powered By I0gan\n";
+const char logo_str[]      = "// CTF AWD PWN WAF\n// Powered By I0gan\n";
 const char read_str[]      = "\n<-------------------- read ------------------>\n";
 const char write_str[]     = "\n<-------------------- write ----------------->\n";
 const char dangerous_str[] = "\n<-------------- dangerous syscall------------>";

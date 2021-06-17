@@ -7,9 +7,12 @@ CFLAGS := -O2
 RM     := rm -rf
 
 # configure
+# log path
 LOG_PATH    := /tmp/.i0gan
 ARCH        := 64
+# for forward mode
 SERVER_IP   := 127.0.0.1
+# for forward mode
 SERVER_PORT := 8080
 
 # src
