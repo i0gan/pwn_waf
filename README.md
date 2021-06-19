@@ -8,8 +8,17 @@ Author: I0gan
 
 QQ: 418894113
 
+
+
+The WAF is a traffic capture tool for AWD PWN, which is convenient to analyze and write anti attack exp, and is very conducive to the use of `PWN Ctfer`. The tool has been used in AWD competitions for many times. I hope you can `give me a star`. The WAF has `three modes`. The `RUN_CATCH` mode simply capture the attacked interactive traffic, which can be viewed under the  `log path`. The `RUN_I0GAN` mode is a communication and `defense mode`, which can prevent attackers from getting the shell, and can also view the attacker's interactive traffic. This mode is used cautiously, strictly abides by the rules of the ctf competition, and violates the rules of the competition. The consequences are borne by ourselves. The `RUN_FORWARD` mode simply forwards the attacker's traffic to hit others, and we can capture the traffic in the middle. Of course, if the attacker successfully gets the flag, We can also get the flag in the log file.
+
+
+
 ## Fix Log
     2021-05-13: Thancks b0ldfrev commit the IO blocking problem for FORWARD mode 
+
+
+
 
 
 ## RUN_CATCH / RUN_I0GAN MODE WAF Principle
@@ -20,8 +29,7 @@ Execve the target elf file by creating a child process, and then the parent proc
 
 ## RUN_FORWARD MODE WAF Principle
 
-Capture traffic from standard I / O and forward it to the target service.
-
+Capture traffic from standard I / O and forward it to the target server. You can captrue traffic between the attacker and the victim, and you can also get victim's flag
 
 
 ## Code Tree
@@ -51,7 +59,7 @@ SERVER_IP   := 127.0.0.1 # RUN_FORWARD used
 SERVER_PORT := 9090      # RUN_FORWARD used
 ```
 
-You can set your own base configure information.
+Some configuration information of this mode is in `makefile`, `LOG_PATH` is a log file path, `ARCH` Represents whether the program is 32-bit or 64 bit. The `SERVER_IP` and `SERVER_PORT` only used in `FORWARD` mode.  So You must have to set your own base configure information. 
 
 
 
@@ -111,6 +119,18 @@ cp /tmp/catch /pwn/pwn # Replace your service binary program
 
 If the attacker attacks, the corresponding attack log file will be generated in the directory `/tmp/.i0gan/`. Each attack will generate a file, which can be directly analyzed after being attacked
 
+
+## How to use FORWARD MODE
+
+Some configuration information of this mode is in makefile
+
+```
+# for forward mode
+SERVER_IP   := 127.0.0.1
+# for forward mode
+SERVER_PORT := 8080
+
+```
 
 
 ## RUN_CATCH MODE Test
