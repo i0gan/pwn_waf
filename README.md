@@ -10,7 +10,7 @@ QQ: 418894113
 
 
 
-The WAF is a traffic capture tool for AWD PWN, which is convenient to analyze and write anti attack exp, and is very conducive to the use of `PWN Ctfer`. The tool has been used in AWD competitions for many times. I hope you can `give me a star`. The WAF has `three modes`. The `RUN_CATCH` mode simply capture the attacked interactive traffic, which can be viewed under the  `log path`. The `RUN_I0GAN` mode is a communication and `defense mode`, which can prevent attackers from getting the shell, and can also view the attacker's interactive traffic. This mode is used cautiously, strictly abides by the rules of the ctf competition, and violates the rules of the competition. The consequences are borne by ourselves. The `RUN_FORWARD` mode simply forwards the attacker's traffic to hit others, and we can capture the traffic in the middle. Of course, if the attacker successfully gets the flag, We can also get the flag in the log file.
+The WAF is a traffic capture tool for AWD PWN, which is convenient to analyze and write anti attack exp, and is very conducive to the use of `PWN Ctfer`. The tool has been used in AWD competitions for many times. I hope you can `give me a star`. The WAF has `three modes`. The `RUN_CATCH` mode simply capture the attacked interactive traffic, which can be viewed under the  `log path`. The `RUN_I0GAN` mode is a communication and `defense mode`, which can prevent attackers from getting the shell, and can also view the attacker's interactive traffic. This mode is used cautiously, strictly abides by the rules of the ctf competition. If you violates the rules of the competition. The consequences are borne by ourselves. The `RUN_FORWARD` mode simply forwards the attacker's traffic to hit others, and we can capture the traffic in the middle. Of course, if the attacker successfully gets the flag, We can also get the flag in the log file.
 
 
 
@@ -319,4 +319,151 @@ Connection: close
 400 Bad Request
 w_0 = "\x48\x54\x54\x50\x2f\x31\x2e\x31\x20\x34\x30\x30\x20\x42\x61\x64\x20\x52\x65\x71\x75\x65\x73\x74\x0d\x0a\x43\x6f\x6e\x74\x65\x6e\x74\x2d\x54\x79\x70\x65\x3a\x20\x74\x65\x78\x74\x2f\x70\x6c\x61\x69\x6e\x3b\x20\x63\x68\x61\x72\x73\x65\x74\x3d\x75\x74\x66\x2d\x38\x0d\x0a\x43\x6f\x6e\x6e\x65\x63\x74\x69\x6f\x6e\x3a\x20\x63\x6c\x6f\x73\x65\x0d\x0a\x0d\x0a\x34\x30\x30\x20\x42\x61\x64\x20\x52\x65\x71\x75\x65\x73\x74"
 ```
+
+
+
+
+
+
+
+## Example RUN_CATCH
+
+env: 
+
+our server [ chall 127.0.0.1 8080, ssh 127.0.0.1 8022]
+
+attacker
+
+
+
+### Step1 
+
+Connect your server use ssh.
+
+
+
+### Step2
+
+Check your server program path
+
+```
+root@efff8f877f79:/# cat /etc/xinetd.d/pwn
+```
+
+output
+
+```
+service pwn
+{
+    disable = no
+    socket_type = stream
+    protocol    = tcp
+    wait        = no
+    user        = pwn
+    type        = UNLISTED
+    port        = 80
+    bind        = 0.0.0.0
+    server      = /pwn
+    server_args = none
+    # safety options
+    per_source  = 10 # the maximum instances of this service per source IP address
+    rlimit_cpu  = 20 # the maximum number of CPU seconds that the service may use
+    rlimit_as  = 256M # the Address Space resource limit for the service
+    #access_times = 8:50-17:10
+}
+
+```
+
+So we find listened program is `/pwn`,  so we just replace this program as our waf.
+
+```
+mkdir /tmp/.i0gan
+chmod 777 /tmp/.i0gan
+cp /pwn /tmp/.i0gan/pwn
+```
+
+upload catch file to server and replace /pwn to our waf
+
+```
+cp catch /pwn
+```
+
+
+
+Now attacker connect to this server
+
+```
+  ____ _   _ ___ _____
+ / ___| | | |_ _|_   _|
+| |   | | | || |  | |  
+| |___| |_| || |  | |  
+ \____|\___/|___| |_| 
+
+CUIT 2021 Experimental Class Exam [PWN 1 calc error]
+
+Why you wanna enter experimental class?
+
+asdfasdfasdfasdfasdf
+Ok, Now you can input two number to calc, Can you make an error?
+asdfasdf
+Invalid!
+```
+
+
+
+Check our server log
+
+```
+root@efff8f877f79:/# cat /tmp/.i0gan/15_04_25_b51a7.i0gan 
+// Date: 2021-06-19 15:04:25
+// Mode: RUN_CATCH
+// CTF AWD PWN WAF
+// Powered By I0gan
+
+<-------------------- write ----------------->
+  ____ _   _ ___ _____
+ / ___| | | |_ _|_   _|
+| |   | | | || |  | |  
+| |___| |_| || |  | |  
+ \____|\___/|___| |_| 
+
+CUIT 2021 Experimental Class Exam [PWN 1 calc error]
+
+Why you wanna enter experimental class?
+
+
+w_0 = "\x20\x20\x5f\x5f\x5f\x5f\x20\x5f\x20\x20\x20\x5f\x20\x5f\x5f\x5f\x20\x5f\x5f\x5f\x5f\x5f\x0a\x20\x2f\x20\x5f\x5f\x5f\x7c\x20\x7c\x20\x7c\x20\x7c\x5f\x20\x5f\x7c\x5f\x20\x20\x20\x5f\x7c\x0a\x7c\x20\x7c\x20\x20\x20\x7c\x20\x7c\x20\x7c\x20\x7c\x7c\x20\x7c\x20\x20\x7c\x20\x7c\x20\x20\x0a\x7c\x20\x7c\x5f\x5f\x5f\x7c\x20\x7c\x5f\x7c\x20\x7c\x7c\x20\x7c\x20\x20\x7c\x20\x7c\x20\x20\x0a\x20\x5c\x5f\x5f\x5f\x5f\x7c\x5c\x5f\x5f\x5f\x2f\x7c\x5f\x5f\x5f\x7c\x20\x7c\x5f\x7c\x20\x0a\x0a\x43\x55\x49\x54\x20\x32\x30\x32\x31\x20\x45\x78\x70\x65\x72\x69\x6d\x65\x6e\x74\x61\x6c\x20\x43\x6c\x61\x73\x73\x20\x45\x78\x61\x6d\x20\x5b\x50\x57\x4e\x20\x31\x20\x63\x61\x6c\x63\x20\x65\x72\x72\x6f\x72\x5d\x0a\x0a\x57\x68\x79\x20\x79\x6f\x75\x20\x77\x61\x6e\x6e\x61\x20\x65\x6e\x74\x65\x72\x20\x65\x78\x70\x65\x72\x69\x6d\x65\x6e\x74\x61\x6c\x20\x63\x6c\x61\x73\x73\x3f\x0a\x0a"
+
+<-------------------- read ------------------>
+asdfasdfasdfasdfasdf
+
+r_0 = "\x61\x73\x64\x66\x61\x73\x64\x66\x61\x73\x64\x66\x61\x73\x64\x66\x61\x73\x64\x66\x0a"
+
+<-------------------- write ----------------->
+Ok, Now you can input two number to calc, Can you make an error?
+
+w_1 = "\x4f\x6b\x2c\x20\x4e\x6f\x77\x20\x79\x6f\x75\x20\x63\x61\x6e\x20\x69\x6e\x70\x75\x74\x20\x74\x77\x6f\x20\x6e\x75\x6d\x62\x65\x72\x20\x74\x6f\x20\x63\x61\x6c\x63\x2c\x20\x43\x61\x6e\x20\x79\x6f\x75\x20\x6d\x61\x6b\x65\x20\x61\x6e\x20\x65\x72\x72\x6f\x72\x3f\x0a"
+
+<-------------------- read ------------------>
+
+<-------------------- write ----------------->
+```
+
+
+
+## Example RUN_I0GAN
+
+
+
+
+
+
+
+## Example RUN_FORWARD
+
+
+
+
+
+
 
