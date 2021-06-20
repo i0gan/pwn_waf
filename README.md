@@ -27,15 +27,15 @@ The WAF is a traffic capture tool for AWD PWN, which is convenient to analyze an
 
 
 
-## RUN_CATCH / RUN_I0GAN MODE WAF Principle
+## CATCH / I0GAN modes waf principle
 
 Execve the target elf file by creating a child process, and then the parent process uses ptrace to monitor the syscall  of the child process. If the standard IO is used, the data  is read and recorded in the log. If the syscall is dangerous, it is also recorded in the log
 
 
 
-## RUN_FORWARD MODE WAF Principle
+## FORWARD / FORWARD_MULTI modes waf principle
 
-Capture traffic from standard I / O and forward it to the target server. You can captrue traffic between the attacker and the victim, and you can also get victim's flag
+Capture traffic from standard I / O and forward it to the target server. You can captrue traffic between the attacker and the victim, and you can also get victim's flag.
 
 
 
