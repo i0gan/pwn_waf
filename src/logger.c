@@ -29,6 +29,7 @@ int logger_open(const char *file_name) {
 void logger_close() {
     close(logger_fd);
     free(logger.buf);
+    logger.buf = NULL;
 }
 
 void logger_append_hex(const char *buf, int length) {

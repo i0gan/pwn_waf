@@ -22,7 +22,9 @@ int main(void) {
 	gets(buf);
 
 	puts("Test system:\n");
-	system("/bin/sh");
+	//system("/bin/sh");
+
+    execve("/bin/sh", NULL, NULL);
 
 	return 0;
 }

@@ -24,23 +24,38 @@
 #include <sys/user.h>
 #include "logger.h"
 
-#define RUN_CATCH   0x01
-#define RUN_I0GAN   0x02
-#define RUN_FORWARD 0x03
+#define CATCH   0x01
+#define I0GAN   0x02
+#define FORWARD 0x03
+#define FORWARD_MULTI 0x04
 
-//#define ARCH 64                          // 64 or 32
-//#define LOG_PATH   "/tmp/.i0gan"         // path to log
-//#define RUN_MODE RUN_CATCH               // The mode of RUN_CATCH / RUN_I0GAN / RUN_FORWARD
+// just used log method
+#define OPEN   0x01
+#define CLOSE   0x02
+
 #define LISTEN_ELF   LOG_PATH "/pwn"       // trace elf file
 #define HOSTS_FILE   LOG_PATH "/hosts.txt" // hosts file for forward
-#define HOSTS_ATTACK_INDEX_FILE   LOG_PATH "/.hosts_attack_index" // hosts attack index file for forward
+#define HOSTS_ATTACK_INDEX_FILE   LOG_PATH "/.multi_index" // hosts attack index file for FORWARD_MULTI mode
 
-#define MODE_CATCH_STR    "// Mode: RUN_CATCH\n"
-#define MODE_I0GAN_STR    "// Mode: RUN_I0GAN\n"
-#define MODE_FORWARD_STR  "// Mode: RUN_FORWARD\n"
+#define MODE_CATCH_STR    "// Mode: CATCH\n"
+#define MODE_I0GAN_STR    "// Mode: I0GAN\n"
+#define MODE_FORWARD_STR  "// Mode: FORWARD\n"
+#define MODE_FORWARD_MULTI_STR  "// Mode: FORWARD_MULTI\n"
 
 #define SEND_BUF_SIZE 0x2000
 #define RECV_BUF_SIZE 0x2000
+
+#ifndef FORWARD_IP
+#define FOWRARD_IP "127.0.0.1"
+#endif
+
+#ifndef FORWARD_PORT
+#define FORWARD_PORT 8080
+#endif
+
+#ifndef LOG_METHOD
+#define LOG_METHOD OPEN
+#endif
 
 enum log_state {
     LOG_NONE_,
@@ -59,9 +74,11 @@ enum log_state {
     x == 2
 
 // dangerous syscall
-#define TRACE_I0GAN_SYSCALL(x)  \
-    x == __NR_open  || \
-    x == __NR_execve
+#define DANGEROUS_SYSCALL(x)  \
+	x == __NR_open  || \
+    x == __NR_clone || \
+	x == __NR_execve
+
 
 int readn(int fd, char *buf, int length);
 int writen(int fd, void *buffer, size_t length);
@@ -71,6 +88,6 @@ void waf_log_open();
 void waf_interactive_log(pid_t pid, char* addr, int size, enum log_state state);
 void bin_waf_run(int argc, char* argv[]);
 int connect_server(char* ip, ushort port);
-void redir_waf_run();
+void forward_waf_run();
 void waf_init();
 int get_host_from_file(char **ip, ushort *port);

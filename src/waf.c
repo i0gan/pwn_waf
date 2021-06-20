@@ -61,6 +61,10 @@ int writen(int fd, void *buffer, size_t length) {
 }
 
 void waf_write_logo() {
+#if LOG_METHOD == CLOSE
+    return;
+#endif
+
     char time_str[128] = {0};
     struct timeval tv;
     time_t time;
@@ -69,17 +73,22 @@ void waf_write_logo() {
     struct tm *p_time = localtime(&time);
     strftime(time_str, 128, "// Date: %Y-%m-%d %H:%M:%S\n", p_time);
     logger_write(time_str, strlen(time_str));
-    if(waf_run_mode == RUN_CATCH) {
+    if(waf_run_mode == CATCH) {
         logger_write(MODE_CATCH_STR, strlen(MODE_CATCH_STR));
-    }else if(waf_run_mode == RUN_I0GAN){
+    }else if(waf_run_mode == I0GAN){
         logger_write(MODE_I0GAN_STR, strlen(MODE_I0GAN_STR));
-    }else if(waf_run_mode == RUN_FORWARD) {
+    }else if(waf_run_mode == FORWARD) {
         logger_write(MODE_FORWARD_STR, strlen(MODE_FORWARD_STR));
+    }else if(waf_run_mode == FORWARD_MULTI) {
+        logger_write(MODE_FORWARD_MULTI_STR, strlen(MODE_FORWARD_MULTI_STR));
     }else {}
     logger_write(logo_str, sizeof(logo_str) - 1);
 }
 
 void waf_write_hex_log() {
+#if LOG_METHOD == CLOSE
+    return;
+#endif
     if(logger_size() == 0) return;
     char str[0x60] = {0};
     if(waf_log_state == LOG_WRITE_) {
@@ -96,6 +105,9 @@ void waf_write_hex_log() {
 }
 
 void waf_log_open() {
+#if LOG_METHOD == CLOSE
+    return;
+#endif
     char time_str[0x20] = {0};
     char file_name[0x100] = {0};
     struct timeval tv;
@@ -149,8 +161,10 @@ void bin_waf_run(int argc, char* argv[]) {
     // Use child process to exec 
     if(pid == 0){
         ptrace(PTRACE_TRACEME, 0, NULL, NULL);
+        prctl(PR_SET_PDEATHSIG, SIGHUP); // when parent process exit, the child process also exit.
         argv[1] = LISTEN_ELF;
         status = execvp(LISTEN_ELF, argv + 1);
+        //dup2(STDOUT_FILENO, STDERR_FILENO);
         if(status<0){
             perror("exec");
             return ;
@@ -170,17 +184,18 @@ void bin_waf_run(int argc, char* argv[]) {
             sys_num = regs.orig_eax;
 #endif
             //printf("syscall %d\n", sys_num);
-            if(TRACE_I0GAN_SYSCALL(sys_num)) {
+            if(DANGEROUS_SYSCALL(sys_num)) {
                 dangerous_syscall_times += 1;
                 if(dangerous_syscall_times > 1) {
                     // dangerous syscall
                     logger_write(dangerous_str, sizeof(dangerous_str) - 1);
-                    if(waf_run_mode == RUN_I0GAN) {
+                    
+                    if(waf_run_mode == I0GAN) {
                         // Write last data to log buf
-                        waf_write_hex_log();
-                        logger_close();
                         // Avoid input cmd from attacker
-                        readn(1, logger.buf, 0x1000);
+                        //printf("syscall: %d\n", sys_num);
+                        logger_write("\nAVOID\n", sizeof("\nAVOID\n") - 1);
+                        //exit(0);
                         return ;
                     }
                 }
@@ -234,6 +249,7 @@ void bin_waf_run(int argc, char* argv[]) {
     else{
         perror("fork");
     }
+
 }
 
 int connect_server(char* ip, ushort port) {    
@@ -258,7 +274,7 @@ int connect_server(char* ip, ushort port) {
     return server_fd;
 }
 
-void redir_waf_run() {
+void forward_waf_run() {
     fd_set read_fds, test_fds;
     int client_read_fd = 0;
     int client_write_fd = 1;
@@ -266,12 +282,17 @@ void redir_waf_run() {
     char *server_ip = NULL;
     ushort server_port = 0;
 
+#if RUN_MODE == FORWARD
+    server_ip = FORWARD_IP;
+    server_port = FORWARD_PORT;
+#elif RUN_MODE == FORWARD_MULTI
     int ret = get_host_from_file(&server_ip, &server_port);
     if(ret == -1) {
         return;
     }
-
+#endif
     int server_fd = connect_server(server_ip, server_port);
+
 
     FD_ZERO(&read_fds);
     FD_ZERO(&test_fds);
@@ -351,28 +372,32 @@ void redir_waf_run() {
 void waf_init() {
     setbuf(stdin, NULL);
     setbuf(stdout, NULL);
+#if LOG_METHOD == OPEN
 	logger_init(LOG_PATH);
     waf_log_open();
     waf_write_logo();
-#if RUN_MODE == RUN_I0GAN
+#endif
+
+#if RUN_MODE == I0GAN
     prctl(PR_SET_PDEATHSIG, SIGHUP);
 #endif
 }
 
 int main(int argc, char *argv[]) {
     waf_init();
-#if RUN_MODE == RUN_FORWARD
-    redir_waf_run();
-#elif RUN_MODE == RUN_I0GAN
+#if RUN_MODE == FORWARD
+    forward_waf_run();
+#elif RUN_MODE == FORWARD_MULTI
+    forward_waf_run();
+#elif RUN_MODE == I0GAN
     bin_waf_run(argc, argv);
-#elif RUN_MODE == RUN_CATCH
+#elif RUN_MODE == CATCH
     bin_waf_run(argc, argv);
 #endif
     waf_write_hex_log();
 	logger_close();
     return 0;
 }
-
 
 
 int get_host_from_file(char **ip, ushort *port) {
