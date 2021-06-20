@@ -53,7 +53,7 @@ In makefile
 
 ```makefile
 # configure
-LOG_PATH    := /tmp/.i0gan # Set your own log path
+LOG_PATH    := /tmp/.waf # Set your own log path
 ARCH        := 64
 SERVER_IP   := 127.0.0.1 # RUN_FORWARD used
 SERVER_PORT := 9090      # RUN_FORWARD used

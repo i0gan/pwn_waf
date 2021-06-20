@@ -28,24 +28,19 @@
 #define RUN_I0GAN   0x02
 #define RUN_FORWARD 0x03
 
-//#define ARCH 64                        // 64 or 32
-//#define LOG_PATH   "/tmp/.i0gan"       // path to log
-//#define RUN_MODE RUN_CATCH             // The mode of RUN_CATCH / RUN_I0GAN / RUN_FORWARD
-#define LISTEN_ELF   LOG_PATH "/pwn"     // trace elf file
+//#define ARCH 64                          // 64 or 32
+//#define LOG_PATH   "/tmp/.i0gan"         // path to log
+//#define RUN_MODE RUN_CATCH               // The mode of RUN_CATCH / RUN_I0GAN / RUN_FORWARD
+#define LISTEN_ELF   LOG_PATH "/pwn"       // trace elf file
+#define HOSTS_FILE   LOG_PATH "/hosts.txt" // hosts file for forward
+#define HOSTS_ATTACK_INDEX_FILE   LOG_PATH "/.hosts_attack_index" // hosts attack index file for forward
+
 #define MODE_CATCH_STR    "// Mode: RUN_CATCH\n"
 #define MODE_I0GAN_STR    "// Mode: RUN_I0GAN\n"
 #define MODE_FORWARD_STR  "// Mode: RUN_FORWARD\n"
-#define SEND_BUF_SIZE 0x1000
-#define RECV_BUF_SIZE 0x1000
 
-#ifndef SERVER_IP
-#define SERVER_IP "0.0.0.0"
-#endif
-
-#ifndef SERVER_PORT
-#define SERVER_PORT 80
-#endif
-
+#define SEND_BUF_SIZE 0x2000
+#define RECV_BUF_SIZE 0x2000
 
 enum log_state {
     LOG_NONE_,
@@ -75,6 +70,7 @@ void waf_write_hex_log();
 void waf_log_open();
 void waf_interactive_log(pid_t pid, char* addr, int size, enum log_state state);
 void bin_waf_run(int argc, char* argv[]);
-int connect_server();
+int connect_server(char* ip, ushort port);
 void redir_waf_run();
 void waf_init();
+int get_host_from_file(char **ip, ushort *port);

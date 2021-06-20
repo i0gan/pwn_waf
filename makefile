@@ -1,5 +1,5 @@
 # Author: i0gan
-# Do    : For compile pwn waf program
+# Do    : For compile waf program
 # Date  : 2020-12-15
 
 GCC    := gcc
@@ -8,12 +8,8 @@ RM     := rm -rf
 
 # configure
 # log path
-LOG_PATH    := /tmp/.i0gan
+LOG_PATH    := /tmp/.waf
 ARCH        := 64
-# for forward mode
-SERVER_IP   := 127.0.0.1
-# for forward mode
-SERVER_PORT := 8080
 
 # src
 TEST_PWN_SRC := src/test_pwn.c
@@ -27,6 +23,7 @@ test_pwn :
 	@mkdir $(LOG_PATH)
 	$(GCC) $(TEST_PWN_SRC) -o $@
 	@cp $@ $(LOG_PATH)/pwn
+	@cp hosts.txt $(LOG_PATH)/
 
 clean :
 	$(RM) catch i0gan forward test_pwn $(LOG_PATH)

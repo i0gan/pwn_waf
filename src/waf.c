@@ -4,10 +4,15 @@
 
 #include "waf.h"
 #include <fcntl.h>
-const char logo_str[]      = "// CTF AWD PWN WAF\n// Powered By I0gan\n";
+#include <sys/stat.h>
+#include <stdlib.h>
+
+const char logo_str[]      = "// CTF AWD PWN WAF\n// Deved By I0gan\n";
 const char read_str[]      = "\n<-------------------- read ------------------>\n";
 const char write_str[]     = "\n<-------------------- write ----------------->\n";
 const char dangerous_str[] = "\n<-------------- dangerous syscall------------>";
+char *hosts_str1_buf = NULL;
+char *hosts_str2_buf = NULL;
 enum log_state waf_log_state = LOG_NONE_;
 
 int  waf_run_mode = RUN_MODE;
@@ -99,7 +104,7 @@ void waf_log_open() {
     time_ = tv.tv_sec;
     struct tm *p_time = localtime(&time_);
     strftime(time_str, 128, "%H_%M_%S", p_time);
-    snprintf(file_name, 0x100, "%s/%s_%lx%s", LOG_PATH, time_str, tv.tv_usec, ".i0gan");
+    snprintf(file_name, 0x100, "%s/%s_%lx%s", LOG_PATH, time_str, tv.tv_usec, ".log");
     if(logger_open(file_name) == 0) {
         printf("Open log [%s] file failed!\n", file_name);
         exit(-1);
@@ -231,7 +236,7 @@ void bin_waf_run(int argc, char* argv[]) {
     }
 }
 
-int connect_server() {    
+int connect_server(char* ip, ushort port) {    
     struct sockaddr_in server_addr;
     int server_fd = -1;
     server_fd = socket(AF_INET, SOCK_STREAM, 0);
@@ -241,8 +246,8 @@ int connect_server() {
     }
     bzero(&server_addr,sizeof(server_addr));
     server_addr.sin_family = AF_INET;
-    server_addr.sin_port = htons(SERVER_PORT);
-    if(inet_aton(SERVER_IP, (struct in_addr*)&server_addr.sin_addr.s_addr) == 0){
+    server_addr.sin_port = htons(port);
+    if(inet_aton(ip, (struct in_addr*)&server_addr.sin_addr.s_addr) == 0){
         perror("ip error");
         return -1;
     }
@@ -258,8 +263,15 @@ void redir_waf_run() {
     int client_read_fd = 0;
     int client_write_fd = 1;
     int client_error_fd = 2;
+    char *server_ip = NULL;
+    ushort server_port = 0;
 
-    int server_fd = connect_server();
+    int ret = get_host_from_file(&server_ip, &server_port);
+    if(ret == -1) {
+        return;
+    }
+
+    int server_fd = connect_server(server_ip, server_port);
 
     FD_ZERO(&read_fds);
     FD_ZERO(&test_fds);
@@ -303,8 +315,11 @@ void redir_waf_run() {
                 // handle disconnect
                 if(read_size == 0 || write_size == 0) {
                     close(fd);
+                    free(hosts_str1_buf);
+                    free(hosts_str2_buf);
                     return;
                 }
+
                 if(read_size > 0 || write_size > 0) {
                     if(read_size > 0)
                         log_state_ = LOG_READ_;
@@ -355,5 +370,77 @@ int main(int argc, char *argv[]) {
 #endif
     waf_write_hex_log();
 	logger_close();
+    return 0;
+}
+
+
+
+int get_host_from_file(char **ip, ushort *port) {
+    int attack_index = 0;
+    char attack_index_str[8] = {0};
+    int fd = open(HOSTS_FILE, O_RDONLY);
+    int ai_fd = open(HOSTS_ATTACK_INDEX_FILE, O_RDWR | O_CREAT, 0666);
+
+    read(ai_fd, attack_index_str, sizeof(attack_index_str));
+    attack_index = atoi(attack_index_str);
+    if(attack_index == -1) attack_index = 0;
+    //printf("now attack_index: %d, file %s ", attack_index, attack_index_str);
+
+    if(fd == -1) {
+        perror("open:");
+        return -1;
+    }
+
+    struct stat stat;
+    int ret = fstat(fd, &stat);
+    if(ret == -1) {
+        perror("fstat:");
+        return -1;
+    }
+    char *hosts_str = malloc(stat.st_size + 0x10);
+    char *hosts_str2 = malloc(stat.st_size + 0x10);
+    read(fd, hosts_str, stat.st_size);
+    memcpy(hosts_str2, hosts_str, stat.st_size);
+
+    char *p = NULL;
+    char *line = hosts_str;
+    int line_nums = 0;
+
+    p = strsep(&line, "\n");
+    while(p != NULL) {
+        char *info = p;
+        char *f_ip = strsep(&info, ":");
+        char *f_port = strsep(&info, ":");
+        if(f_ip != NULL && f_port != NULL)
+            line_nums ++;
+        p = strsep(&line, "\n");
+    }
+
+    //printf("line_nums  : %d\n", line_nums);
+    line = hosts_str2;
+    p = strsep(&line, "\n");
+    int now_index = 0;
+    while(p != NULL) {
+        char *info = p;
+        char *f_ip = strsep(&info, ":");
+        char *f_port = strsep(&info, ":");
+        if(f_ip != NULL && f_port != NULL) {
+            if(now_index == attack_index) {
+                *ip = f_ip;
+                *port = atoi(f_port);
+                //printf("host: %s:%d\n", *ip, *port);
+                break;
+            }
+            now_index ++;
+        }
+        p = strsep(&line, "\n");
+        puts(hosts_str);
+    }
+    attack_index = (attack_index + 1) % line_nums;
+    snprintf(attack_index_str, sizeof(attack_index_str), "%d", attack_index);
+    lseek(ai_fd, 0, SEEK_SET);
+    write(ai_fd, attack_index_str, sizeof(attack_index_str));
+    close(ai_fd);
+    close(fd);
     return 0;
 }
