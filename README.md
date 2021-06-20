@@ -308,26 +308,94 @@ The common problem is that the permissions are not enough, which  appear in the 
 
 ## Test CATCH
 
+server
+
 ```
-[i0gan@arch pwn_waf]$ ./catch 
+socat TCP-LISTEN:1234,reuseaddr,fork EXEC:./catch 
+```
+
+attacker
+
+```
+nc 127.0.0.1 1234
 Test puts:
 Test write�
 Test read:
-aabb
+abcasdfasdf
 Test gets:
 
-dddddaf
-Test system:
+asdfadf
+Test get shell:
 
-sh-5.1$ ls
-catch  forward  forward_multi  hosts.txt  i0gan  makefile  README.md  src  test_pwn
-sh-5.1$ exit
-exit
+ls
+README.md
+catch
+forward
+forward_multi
+hosts.txt
+i0gan
+makefile
+src
+test
+test_pwn
+exit 
 ```
 
-log
+
+
+server log
 
 ```
+cat /tmp/.waf/14_32_43_6740c.log
+```
+
+
+
+```
+// Date: 2021-06-20 14:32:43
+// Mode: CATCH
+// CTF AWD PWN WAF
+// Deved By I0gan
+
+<-------------------- write ----------------->
+Test puts:
+Test write�
+Test read:
+
+w_0 = "\x54\x65\x73\x74\x20\x70\x75\x74\x73\x3a\x0a\x54\x65\x73\x74\x20\x77\x72\x69\x74\x65\x00\x01\x02\x03\xff\x0a\x54\x65\x73\x74\x20\x72\x65\x61\x64\x3a\x0a"
+
+<-------------------- read ------------------>
+abcasdfasdf
+
+r_0 = "\x61\x62\x63\x61\x73\x64\x66\x61\x73\x64\x66\x0a"
+
+<-------------------- write ----------------->
+Test gets:
+
+
+w_1 = "\x54\x65\x73\x74\x20\x67\x65\x74\x73\x3a\x0a\x0a"
+
+<-------------------- read ------------------>
+asdfadf
+
+r_1 = "\x61\x73\x64\x66\x61\x64\x66\x0a"
+
+<-------------------- write ----------------->
+Test get shell:
+
+
+<-------------- dangerous syscall------------>
+<-------------- dangerous syscall------------>
+<-------------- dangerous syscall------------>
+w_2 = "\x54\x65\x73\x74\x20\x67\x65\x74\x20\x73\x68\x65\x6c\x6c\x3a\x0a\x0a"
+
+<-------------------- read ------------------>
+ls
+
+<-------------- dangerous syscall------------>
+<-------------- dangerous syscall------------>exit
+
+r_2 = "\x6c\x73\x0a\x65\x78\x69\x74\x0a"
 ```
 
 
@@ -336,13 +404,195 @@ log
 
 ## Test I0GAN
 
+server
+
+```
+socat TCP-LISTEN:1234,reuseaddr,fork EXEC:./i0gan
+```
 
 
 
+attacker
+
+```
+nc 127.0.0.1 1234
+Test puts:
+Test write�
+Test read:
+asdfadsf
+Test gets:
+
+asdfasdf
+Test get shell:
+
+```
+
+
+
+server log
+
+```
+cat /tmp/.waf/14_37_22_5159c.log
+```
+
+
+
+```
+// Date: 2021-06-20 14:37:22
+// Mode: I0GAN
+// CTF AWD PWN WAF
+// Deved By I0gan
+
+<-------------------- write ----------------->
+Test puts:
+Test write�
+Test read:
+
+w_0 = "\x54\x65\x73\x74\x20\x70\x75\x74\x73\x3a\x0a\x54\x65\x73\x74\x20\x77\x72\x69\x74\x65\x00\x01\x02\x03\xff\x0a\x54\x65\x73\x74\x20\x72\x65\x61\x64\x3a\x0a"
+
+<-------------------- read ------------------>
+asdfadsf
+
+r_0 = "\x61\x73\x64\x66\x61\x64\x73\x66\x0a"
+
+<-------------------- write ----------------->
+Test gets:
+
+
+w_1 = "\x54\x65\x73\x74\x20\x67\x65\x74\x73\x3a\x0a\x0a"
+
+<-------------------- read ------------------>
+asdfasdf
+
+r_1 = "\x61\x73\x64\x66\x61\x73\x64\x66\x0a"
+
+<-------------------- write ----------------->
+Test get shell:
+
+
+<-------------- dangerous syscall------------>
+AVOID
+
+w_2 = "\x54\x65\x73\x74\x20\x67\x65\x74\x20\x73\x68\x65\x6c\x6c\x3a\x0a\x0a"
+```
 
 
 
 ## Test FORWARD
+
+victim's ip is 127.0.0.1, port is 20000
+
+test nc
+
+```
+nc 127.0.0.1 20000
+  ____ _   _ ___ _____
+ / ___| | | |_ _|_   _|
+| |   | | | || |  | |  
+| |___| |_| || |  | |  
+ \____|\___/|___| |_| 
+
+CUIT 2021 Experimental Class Exam [PWN 1 calc error]
+
+Why you wanna enter experimental class?
+
+asdf
+Ok, Now you can input two number to calc, Can you make an error?
+asdf
+Invalid!
+```
+
+
+
+In makefile 
+
+```
+FORWARD_IP   := 127.0.0.1
+FORWARD_PORT := 20000
+```
+
+Compile forward
+
+Server
+
+```
+socat TCP-LISTEN:1234,reuseaddr,fork EXEC:./forward
+```
+
+attacker
+
+```
+nc 127.0.0.1 1234
+  ____ _   _ ___ _____
+ / ___| | | |_ _|_   _|
+| |   | | | || |  | |  
+| |___| |_| || |  | |  
+ \____|\___/|___| |_| 
+
+CUIT 2021 Experimental Class Exam [PWN 1 calc error]
+
+Why you wanna enter experimental class?
+
+asfasdfasdf
+Ok, Now you can input two number to calc, Can you make an error?
+asdf
+Invalid!
+
+```
+
+
+
+server log
+
+```
+cat /tmp/.waf/14_41_28_81a62.log
+```
+
+
+
+```
+// Date: 2021-06-20 14:41:28
+// Mode: FORWARD
+// CTF AWD PWN WAF
+// Deved By I0gan
+
+<-------------------- write ----------------->
+  ____ _   _ ___ _____
+ / ___| | | |_ _|_   _|
+| |   | | | || |  | |  
+| |___| |_| || |  | |  
+ \____|\___/|___| |_| 
+
+CUIT 2021 Experimental Class Exam [PWN 1 calc error]
+
+Why you wanna enter experimental class?
+
+
+w_0 = "\x20\x20\x5f\x5f\x5f\x5f\x20\x5f\x20\x20\x20\x5f\x20\x5f\x5f\x5f\x20\x5f\x5f\x5f\x5f\x5f\x0a\x20\x2f\x20\x5f\x5f\x5f\x7c\x20\x7c\x20\x7c\x20\x7c\x5f\x20\x5f\x7c\x5f\x20\x20\x20\x5f\x7c\x0a\x7c\x20\x7c\x20\x20\x20\x7c\x20\x7c\x20\x7c\x20\x7c\x7c\x20\x7c\x20\x20\x7c\x20\x7c\x20\x20\x0a\x7c\x20\x7c\x5f\x5f\x5f\x7c\x20\x7c\x5f\x7c\x20\x7c\x7c\x20\x7c\x20\x20\x7c\x20\x7c\x20\x20\x0a\x20\x5c\x5f\x5f\x5f\x5f\x7c\x5c\x5f\x5f\x5f\x2f\x7c\x5f\x5f\x5f\x7c\x20\x7c\x5f\x7c\x20\x0a\x0a\x43\x55\x49\x54\x20\x32\x30\x32\x31\x20\x45\x78\x70\x65\x72\x69\x6d\x65\x6e\x74\x61\x6c\x20\x43\x6c\x61\x73\x73\x20\x45\x78\x61\x6d\x20\x5b\x50\x57\x4e\x20\x31\x20\x63\x61\x6c\x63\x20\x65\x72\x72\x6f\x72\x5d\x0a\x0a\x57\x68\x79\x20\x79\x6f\x75\x20\x77\x61\x6e\x6e\x61\x20\x65\x6e\x74\x65\x72\x20\x65\x78\x70\x65\x72\x69\x6d\x65\x6e\x74\x61\x6c\x20\x63\x6c\x61\x73\x73\x3f\x0a\x0a"
+
+<-------------------- read ------------------>
+asfasdfasdf
+
+r_0 = "\x61\x73\x66\x61\x73\x64\x66\x61\x73\x64\x66\x0a"
+
+<-------------------- write ----------------->
+Ok, Now you can input two number to calc, Can you make an error?
+
+w_1 = "\x4f\x6b\x2c\x20\x4e\x6f\x77\x20\x79\x6f\x75\x20\x63\x61\x6e\x20\x69\x6e\x70\x75\x74\x20\x74\x77\x6f\x20\x6e\x75\x6d\x62\x65\x72\x20\x74\x6f\x20\x63\x61\x6c\x63\x2c\x20\x43\x61\x6e\x20\x79\x6f\x75\x20\x6d\x61\x6b\x65\x20\x61\x6e\x20\x65\x72\x72\x6f\x72\x3f\x0a"
+
+<-------------------- read ------------------>
+asdf
+
+r_1 = "\x61\x73\x64\x66\x0a"
+
+<-------------------- write ----------------->
+Invalid!
+
+w_2 = "\x49\x6e\x76\x61\x6c\x69\x64\x21\x0a"
+
+```
+
+
 
 
 
@@ -350,9 +600,71 @@ log
 
 ## Test FORWARD_MULTI
 
+In hosts.txt
+
+```
+127.0.0.1:20000
+127.0.0.1:8081
+```
+
+The 8081 port is not open.
+
+Server 
+
+```
+socat TCP-LISTEN:1234,reuseaddr,fork EXEC:./forward_multi 
+```
 
 
 
+Attacker:
 
+```
+[i0gan@arch ~]$ nc 127.0.0.1 1234
+  ____ _   _ ___ _____
+ / ___| | | |_ _|_   _|
+| |   | | | || |  | |  
+| |___| |_| || |  | |  
+ \____|\___/|___| |_| 
 
+CUIT 2021 Experimental Class Exam [PWN 1 calc error]
+
+Why you wanna enter experimental class?
+
+asdfasdf
+Ok, Now you can input two number to calc, Can you make an error?
+asdf
+Invalid!
+
+[i0gan@arch ~]$ nc 127.0.0.1 1234
+127.0.0.1
+
+[i0gan@arch ~]$ nc 127.0.0.1 1234
+  ____ _   _ ___ _____
+ / ___| | | |_ _|_   _|
+| |   | | | || |  | |  
+| |___| |_| || |  | |  
+ \____|\___/|___| |_| 
+
+CUIT 2021 Experimental Class Exam [PWN 1 calc error]
+
+Why you wanna enter experimental class?
+
+asdfasdf
+Ok, Now you can input two number to calc, Can you make an error?
+asdf
+Invalid!
+```
+
+The server listener log
+
+```
+socat TCP-LISTEN:1234,reuseaddr,fork EXEC:./forward_multi
+connect: Connection refused
+2021/06/20 14:49:48 socat[31889] E waitpid(): child 31890 exited with status 111
+connect: Connection refused
+2021/06/20 14:50:02 socat[31919] E waitpid(): child 31920 exited with status 111
+connect: Connection refused
+2021/06/20 14:50:07 socat[31928] E waitpid(): child 31929 exited with status 111
+```
 

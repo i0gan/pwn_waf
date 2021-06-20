@@ -21,7 +21,7 @@ int main(void) {
 	puts("Test gets:\n");
 	gets(buf);
 
-	puts("Test system:\n");
+	puts("Test get shell:\n");
 	//system("/bin/sh");
 
     execve("/bin/sh", NULL, NULL);
