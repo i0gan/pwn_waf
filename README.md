@@ -20,7 +20,13 @@ The WAF is a traffic capture tool for AWD PWN, which is convenient to analyze an
 
 4. The `FORWARD_MUTIL` is based on `FORWARD` mode, it mainly loop get victims's host  information from `hosts.txt` file then forward attacker's traffic to victims.
 
-   
+## Contributor  
+
+```
+    i0gan: Code writer
+    b0ldfrev: Commit IO blocking bug
+    moon: Commit Chinese Document
+```
 
 ## Fix Log
     2021-05-13: Thancks b0ldfrev commit the IO blocking problem for FORWARD mode 
@@ -258,9 +264,16 @@ Upload the compiled `catch` or `i0gan`  program file to the `/tmp` directory.
 ```
 mkdir /tmp/.waf          # Create LOG_PATH directory
 chmod 777 /tmp/.waf      # Modify permissions
-cp /pwn/pwn /tmp/.waf    # Copy service binary program to /tmp/.i0gan dirctory
-cp /tmp/catch /pwn/pwn # Replace your service binary program to our waf
+cp /pwn/pwn /tmp/.waf    # Move service binary program to /tmp/.i0gan dirctory
+chown pwn:pwn /tmp/.waf/pwn # Chown as pwn
+chmod 777 /tmp/.waf/pwn
+mv /tmp/catch /pwn/pwn # Replace your service binary program to our waf
+chmod 777 /pwn/pwn
 ```
+
+
+Notice:
+    You must use nc to test. Check your listend pwn program's permission and log permission.
 
 If the attacker attacks, the corresponding attack log file will be generated in the directory `/tmp/.i0gan/`. Each attack will generate a file, which can be directly analyzed after being attacked
 
@@ -274,6 +287,7 @@ Upload the compiled ` forward` program file to the `/tmp` directory.
 
 ```
 cp /tmp/forward /pwn/pwn # Replace your service binary program to our waf
+chmod 777 /pwn/pwn
 ```
 
 
@@ -290,8 +304,11 @@ mkdir /tmp/.waf          # Create LOG_PATH directory
 chmod 777 /tmp/.waf      # Modify permissions
 cp /tmp/hosts.txt /tmp/.waf # Upload hostes.txt under LOG_PATH
 cp /tmp/forward_multi /pwn/pwn # Replace your service binary program to our waf
+chmod 777 /pwn/pwn
 ```
 
+Notice:
+    You must use nc to test. Check your log permission
 
 
 ### 0x04 Test your server
