@@ -3,7 +3,7 @@
 # Date  : 2020-12-15
 
 GCC    := gcc
-CFLAGS := -O2
+CFLAGS := -O2 --static
 RM     := rm -rf
 
 # configure

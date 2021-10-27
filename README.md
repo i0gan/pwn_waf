@@ -219,6 +219,16 @@ You shold set `LOG_PATH` to your path that have  read && write permissions in `p
 
 #### Compile all
 
+#### Notice
+
+    Compile Env glibc version must <= target glibc version
+    Or waf cannot execute
+```
+./i0gan: /lib/x86_64-linux-gnu/libc.so.6: version `GLIBC_2.33' not found (required by ./i0gan)
+ 
+```
+
+
 ```
 make # or make all
 ```
@@ -273,7 +283,8 @@ chmod 777 /pwn/pwn
 
 
 Notice:
-    You must use nc to test. Check your listend pwn program's permission and log permission.
+    You must use nc to test. If server is down, checking your listened pwn program's permission and log permission.
+    If your program is orw type, open fd start with 6, not 3
 
 If the attacker attacks, the corresponding attack log file will be generated in the directory `/tmp/.i0gan/`. Each attack will generate a file, which can be directly analyzed after being attacked
 

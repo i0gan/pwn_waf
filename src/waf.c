@@ -293,7 +293,6 @@ void forward_waf_run() {
 #endif
     int server_fd = connect_server(server_ip, server_port);
 
-
     FD_ZERO(&read_fds);
     FD_ZERO(&test_fds);
 
@@ -459,7 +458,7 @@ int get_host_from_file(char **ip, ushort *port) {
             now_index ++;
         }
         p = strsep(&line, "\n");
-        puts(hosts_str);
+        //puts(hosts_str);
     }
     attack_index = (attack_index + 1) % line_nums;
     snprintf(attack_index_str, sizeof(attack_index_str), "%d", attack_index);
