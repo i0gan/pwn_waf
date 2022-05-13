@@ -5,6 +5,8 @@ github仓库地址：https://github.com/I0gan/pwn_waf
 
 作者：I0gan
 
+翻译：moon、i0gan
+
 邮箱：i0gan@mail.pwnsky.com 
 
 ### 简介
