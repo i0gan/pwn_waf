@@ -1,14 +1,14 @@
 # AWD PWN WAF
 
-## Intro
+[中文版](./README_ZH.md)
 
 CTF AWD  WAF FOR PWN
 
 Author: I0gan
 
-QQ: 418894113
+Mail: i0gan@mail.pwnsky.com
 
-
+## Intro
 
 The WAF is a traffic capture tool for AWD PWN, which is convenient to analyze and write anti attack exp, and is very conducive to the use of `PWN Ctfer`. The tool has been used in AWD competitions for many times. I hope you can `give me a star`. The WAF has `four modes`. 
 
