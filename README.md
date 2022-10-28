@@ -6,7 +6,7 @@ CTF AWD  WAF FOR PWN
 
 Author: I0gan
 
-Mail: i0gan@mail.pwnsky.com
+Mail: i0gan@pwnsky.com
 
 ## Intro
 
