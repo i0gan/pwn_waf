@@ -16,7 +16,7 @@ The WAF is a traffic capture tool for AWD PWN, which is convenient to analyze an
 
 2. The `I0GAN` mode is a `defense mode`, which can prevent attackers from getting the shell, and can also view the attacker's interactive traffic. This mode is used cautiously, strictly abides by the rules of the ctf competition. If you violates the rules of the competition. The consequences are borne by yourslves. 
 
-3. The `FORWARD` mode simply forwards the attacker's traffic to hit others, and we can capture the traffic in the middle. Of course, if the attacker successfully gets the flag, We can also get the flag in the log file. 
+3. The `FORWARD` [Recommend] mode simply forwards the attacker's traffic to hit others, and we can capture the traffic in the middle. Of course, if the attacker successfully gets the flag, We can also get the flag in the log file. 
 
 4. The `FORWARD_MUTIL` is based on `FORWARD` mode, it mainly loop get victims's host  information from `hosts.txt` file then forward attacker's traffic to victims.
 
@@ -39,7 +39,7 @@ Execve the target elf file by creating a child process, and then the parent proc
 
 
 
-## FORWARD / FORWARD_MULTI modes waf principle [Recommend]
+## FORWARD / FORWARD_MULTI modes waf principle
 
 Capture traffic from standard I / O and forward it to the target server. You can captrue traffic between the attacker and the victim, and you can also get victim's flag.
 
