@@ -39,7 +39,7 @@ Execve the target elf file by creating a child process, and then the parent proc
 
 
 
-## FORWARD / FORWARD_MULTI modes waf principle
+## FORWARD / FORWARD_MULTI modes waf principle [Recommend]
 
 Capture traffic from standard I / O and forward it to the target server. You can captrue traffic between the attacker and the victim, and you can also get victim's flag.
 
